@@ -9,28 +9,75 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
+import importlib
 import json
+import numbers
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import raven
+import sys
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
 SECRET_DIR = os.path.join(ROOT_DIR, '.secrets')
 SECRET_BASE = os.path.join(SECRET_DIR, 'base.json')
+SECRET_LOCAL = os.path.join(SECRET_DIR, 'local.json')
 
-secrets_base = json.loads(open(SECRET_BASE, 'rt').read())
+secrets = json.loads(open(SECRET_BASE, 'rt').read())
 
-SECRET_KEY = secrets_base['SECRET_KEY']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+def set_config(obj, module_name=None, start=False):
+    def eval_obj(obj):
 
-ALLOWED_HOSTS = []
+        # 객체가 int, float거나
+        if isinstance(obj, numbers.Number) or (
+                # srt형이면서 숫자 변환이 가능한 경우
+                isinstance(obj, str) and obj.isdigit()):
+            return obj
 
+        # 객체가 int, float가 아니면서 숫자형태를 가진 str도 아닐경우
+        try:
+            return eval(obj)
+        except NameError:
+            # 없는 변수를 참조할때 발생하는 에러
+            return obj
+        except Exception as e:
+            print(f'Cannot eval object({obj}), Exception: {e}')
+            return obj
+
+    # base.json파일을 partsing한 결과 (python dict)를 순회
+    # set_config에 전달된 개게가 'dict'형태일 경우
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            # value가 dict거나 list일 경우 재귀적으로 함수를 다시 실행
+            if isinstance(value, dict) or isinstance(value, list):
+                set_config(value)
+            # 그 외의 경우 value를 평가한 값을 할당
+            else:
+                obj[key] = eval_obj(value)
+            # set_config()가 처음 호출된 loop에서만 setattr()을 실행
+            if start:
+                setattr(sys.modules[module_name], key, value)
+
+    # 전달된 객체가 'list' 형태일 경우
+    elif isinstance(obj, list):
+        # list 아이템을 순회하며
+        for index, item in enumerate(obj):
+            # list의 해당 index 에 item을 평가한 값을 할당
+            obj[index] = eval_obj(item)
+
+
+# set_config에서 'raven' 모듈을 필요로 하나, 이 모듈의 다른 부분에서 사용하지 않음
+# import raven이라고 쓸 경우 Code reformating에서 필요없는 import로 인식해서 지워짐
+# raven 모듈을 importlib을 사용해 가져온 후 현재 모듈에 'raven'이라는 이름으로 할당
+setattr(sys.modules[__name__], 'raven', importlib.import_module('raven'))
+set_config(secrets, module_name=__name__, start=True)
+
+STATIC_URL = '/static/'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,6 +85,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'raven.contrib.django.raven_compat',
+    'django_extensions',
+
 ]
 
 MIDDLEWARE = [
@@ -68,23 +119,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -100,22 +134,56 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
 LANGUAGE_CODE = 'ko-kr'
-
 TIME_ZONE = 'Asia/Seoul'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-STATIC_URL = '/static/'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry'],
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s '
+                      '%(process)d %(thread)d %(message)s'
+        },
+    },
+    'handlers': {
+        'sentry': {
+            'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'tags': {'custom-tag': 'x'},
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
+}
