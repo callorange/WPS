@@ -24,6 +24,8 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 SECRET_DIR = os.path.join(ROOT_DIR, '.secrets')
 SECRET_BASE = os.path.join(SECRET_DIR, 'base.json')
 SECRET_LOCAL = os.path.join(SECRET_DIR, 'local.json')
+SECRET_DEV = os.path.join(SECRET_DIR, 'dev.json')
+SECRET_PRODUCTION = os.path.join(SECRET_DIR, 'production.json')
 
 secrets = json.loads(open(SECRET_BASE, 'rt').read())
 
@@ -77,7 +79,7 @@ set_config(secrets, module_name=__name__, start=True)
 
 STATIC_URL = '/static/'
 
-# Application definition
+AUTH_USER_MODEL = 'members.User'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -87,7 +89,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'raven.contrib.django.raven_compat',
-    'django_extensions',
+
+    'members',
 
 ]
 
