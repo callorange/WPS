@@ -1,4 +1,4 @@
-FROM            archomai/overeats:base
+FROM            archomai/overeats:bases
 MAINTAINER      team.overeats@gmail.com
 
 ENV             BUILD_MODE              production

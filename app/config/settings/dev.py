@@ -15,7 +15,7 @@ INSTALLED_APPS += [
 ]
 
 DEFAULT_FILE_STORAGE = 'config.storage.DefaultFilesStorage'
-STATICFILES_STORAGE = 'config.storage.StaticFilesStorage'
+# STATICFILES_STORAGE = 'config.storage.StaticFilesStorage'
 
 secrets = json.loads(open(SECRET_DEV, 'rt').read())
 set_config(secrets, module_name=__name__, start=True)
