@@ -1,0 +1,15 @@
+FROM            python:3.6.4-slim
+MAINTAINER      team.overeats@gmail.com
+ENV             LANG    C.UTF-8
+
+# apt-get으로 nginx supervisor 설치
+RUN             apt-get -y update
+RUN             apt-get -y dist-upgrade
+RUN             apt-get -y install build-essential nginx supervisor
+
+# requirments만 복사
+COPY            .requirements /srv/.requirements
+
+# pip install
+WORKDIR         /srv
+RUN             pip install -r /srv/.requirements/production.txt
