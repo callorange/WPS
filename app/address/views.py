@@ -24,15 +24,14 @@ class AddressSearch(APIView):
 
     def geoip_check(self, request):
         g = GeoIP2()
-        if request.META.get('REMOTE_ADDR') not in ["127.0.0.1"]:
-            try:
-                return g.city(request.META.get('REMOTE_ADDR'))
-            except Exception as e:
-                return {
-                    'latitude': 37.5156778,
-                    'longitude': 127.0213856,
-                    'country_code': 'KO'
-                }
+        try:
+            return g.city(request.META.get('REMOTE_ADDR'))
+        except Exception as e:
+            return {
+                'latitude': 37.5156778,
+                'longitude': 127.0213856,
+                'country_code': 'KO'
+            }
 
     def place_search(self, request):
         # 구글 장소 자동완성 URL
@@ -41,7 +40,7 @@ class AddressSearch(APIView):
         place_detail_url = 'https://maps.googleapis.com/maps/api/place/details/json'
 
         client_location = self.geoip_check(request)
-
+        print(client_location)
         place_params = {
             'key': settings.GOOGLE_PLACE_KEY,
             'input': request.data["search_text"],
