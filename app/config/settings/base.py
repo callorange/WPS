@@ -106,7 +106,7 @@ INSTALLED_APPS = [
 
     'members',
     'utils',
-
+    'address.apps.AddressConfig',
 ]
 
 MIDDLEWARE = [
@@ -206,4 +206,15 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+# GEOIP
+GEOIP_PATH = os.path.join(BASE_DIR, 'GEOIP')
+
+# REST FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
 }
