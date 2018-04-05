@@ -92,6 +92,7 @@ set_config(secrets, module_name=__name__, start=True)
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'members.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -206,4 +207,10 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+REST_FRAMEWORK = {
+  'DEFAULT_AUTHENTICATION_CLASSES': (
+      'rest_framework.authentication.TokenAuthentication',
+    )
 }
