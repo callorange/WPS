@@ -16,9 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from config import views
+from . import views
+from members.apis import AuthTokenView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
+    path('api/login/', AuthTokenView.as_view()),
 ]
