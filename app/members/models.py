@@ -3,4 +3,5 @@ from django.db import models
 
 
 class User(AbstractUser):
-    pass
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    img_profile = models.ImageField(upload_to='user', blank=True)
