@@ -89,7 +89,7 @@ def set_config(obj, module_name=None, start=False):
 setattr(sys.modules[__name__], 'raven', importlib.import_module('raven'))
 set_config(secrets, module_name=__name__, start=True)
 
-STATIC_URL = '/static/'
+
 
 AUTH_USER_MODEL = 'members.User'
 
