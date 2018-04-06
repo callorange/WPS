@@ -17,10 +17,11 @@ class UserCreate(APIView):
             user = serializer.save()
             if user:
                 token = Token.objects.create(user=user)
-                json = serializer.data
-                json['token'] = token.key
-                json['password'] = ''
-                return Response(json, status=status.HTTP_201_CREATED)
+                data = {
+                    'token': token.key,
+                    'user': serializer.data,
+                }
+                return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -35,7 +36,9 @@ class AuthTokenView(APIView):
             user = serializer.validated_data['user']
 
             token, _ = Token.objects.get_or_create(user=user)
-            json = UserSerializer(user).data
-            json['token'] = token.key
-            return Response(json, status=status.HTTP_200_OK)
+            data = {
+                'token': token.key,
+                'user': UserSerializer(user).data,
+            }
+            return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

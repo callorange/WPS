@@ -16,13 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
             UniqueValidator(queryset=User.objects.all()),
         ],
     )
-    password = serializers.CharField(min_length=5)
-    first_name = serializers.CharField(allow_blank=True)
-    last_name = serializers.CharField(allow_blank=True)
-    phone_number = serializers.CharField(allow_blank=True)
-    img_profile = serializers.ImageField(allow_empty_file=True)
+    password = serializers.CharField(min_length=5, write_only=True)
+    img_profile = serializers.ImageField(default=None)
 
     def create(self, validated_data):
+        print(validated_data)
         user = User.objects.create_user(
             email=validated_data['username'],
             username=validated_data['username'],
@@ -37,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            'pk',
             'username',
             'password',
             'first_name',
