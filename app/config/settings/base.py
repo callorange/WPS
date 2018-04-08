@@ -92,6 +92,7 @@ set_config(secrets, module_name=__name__, start=True)
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'members.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -162,7 +163,6 @@ TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 
 LOGGING = {
     'version': 1,

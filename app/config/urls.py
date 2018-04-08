@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
     path('api/login/', AuthTokenView.as_view()),
-    path('api/address/', include('address.urls'))
+    path('api/address/', include('address.urls')),
+    path('api/member/', include('members.urls')),
 ]
