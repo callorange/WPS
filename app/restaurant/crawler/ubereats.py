@@ -187,22 +187,17 @@ class UbereatsCrawler():
 
                         # 카테고리랑 태그를 만든다.
                         for tag_item in restaurant.get("tags", []):
-                            if validate_uuid4(tag_item["uuid"]):
-                                if FoodCategory.objects.filter(name=tag_item["name"]).exists() is False:
-                                    tag_obj, tag_created = FoodCategory.objects.get_or_create(
-                                        uuid=tag_item["uuid"],
-                                        name=tag_item["name"],
-                                    )
-                                    restaurant_obj.tags.add(tag_obj)
+                            tag_obj, tag_created = FoodCategory.objects.get_or_create(
+                                name=tag_item["name"],
+                            )
+                            restaurant_obj.tags.add(tag_obj)
 
                         for tag_item in restaurant.get("categories", []):
-                            if validate_uuid4(tag_item["uuid"]):
-                                if FoodCategory.objects.filter(name=tag_item["name"]).exists() is False:
-                                    tag_obj, tag_created = FoodCategory.objects.get_or_create(
-                                        uuid=tag_item["uuid"],
-                                        name=tag_item["name"],
-                                    )
-                                    restaurant_obj.tags.add(tag_obj)
+                            tag_obj, tag_created = FoodCategory.objects.get_or_create(
+                                name=tag_item["name"],
+                            )
+                            restaurant_obj.tags.add(tag_obj)
+
 
                         # 상점 이미지를 넣는다.
                         if restaurant.get("heroImage", None) and restaurant["heroImage"].get("items", None):
@@ -342,6 +337,7 @@ class UbereatsCrawler():
                     print(e)
                     traceback.print_exc()
             else:
+                print('status: ', resposne.status_code)
                 raise ValueError
 
     def del_category_logo_null(self):
