@@ -40,7 +40,7 @@ class AddressSearch(APIView):
         place_detail_url = 'https://maps.googleapis.com/maps/api/place/details/json'
 
         client_location = self.geoip_check(request)
-        print(client_location)
+
         place_params = {
             'key': settings.GOOGLE_PLACE_KEY,
             'input': request.data["search_text"],
