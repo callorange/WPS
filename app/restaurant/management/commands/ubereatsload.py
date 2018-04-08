@@ -19,12 +19,12 @@ class Command(BaseCommand):
 
         search_city = ServiceCity.objects.filter(name='Seoul')
 
-        # # 서대문구 신촌동
-        # # "latitude":37.560519,
-        # # "longitude":126.943155,
-        # search_city.lat = 37.560519
-        # search_city.lng = 126.943155
-        # u.get_restaurant_list(search_city)
+        # 서대문구 신촌동
+        # "latitude":37.560519,
+        # "longitude":126.943155,
+        search_city.lat = 37.560519
+        search_city.lng = 126.943155
+        u.get_restaurant_list(search_city)
         #
         # # 마포구 성산1동
         # # "latitude":37.560519,

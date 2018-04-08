@@ -1,8 +1,10 @@
 import json
 import traceback
+from io import BytesIO
 from uuid import UUID
 
 import requests
+from PIL import Image
 from django.utils.text import slugify
 
 from ..models import ServiceCity, Restaurant, FoodCategory, RestaurantLogo, RestaurantContact, RestaurantSectionHours, \
@@ -210,15 +212,26 @@ class UbereatsCrawler():
                                         width=hero_img["width"],
                                         height=hero_img["height"],
                                     )
-                        RestaurantLogo.objects.filter(width=550).update(is_default=True)
-                        # 상점이미지 - 기본이미지가 있으면 Default로 넣는다.
-                        # if restaurant.get("heroImageUrl", '') != '':
-                        #     hero_obj, hero_created = RestaurantLogo.objects.get_or_create(
-                        #         restaurant=restaurant_obj,
-                        #         url=restaurant["heroImageUrl"]
-                        #     )
-                        #     hero_obj.is_default = True
-                        #     hero_obj.save()
+
+                        # width=550 인 이미지 기본값 True로 업데이트.
+                        # 없으면 기본 이미지를 넣어준다.
+                        logo_imgs = RestaurantLogo.objects.filter(restaurant=restaurant_obj, width=550)
+                        if logo_imgs.exists():
+                            logo_imgs.update(is_default=True)
+                        else:
+                            if restaurant.get("heroImageUrl", '') != '':
+                                print("             * Default Logo Update!")
+                                hero_image_res = requests.get(restaurant.get("heroImageUrl", ''))
+                                hero_image = Image.open(BytesIO(hero_image_res.content))
+                                hero_obj, hero_created = RestaurantLogo.objects.get_or_create(
+                                    restaurant=restaurant_obj,
+                                    url=restaurant["heroImageUrl"],
+                                    width=hero_image.width,
+                                    height=hero_image.height,
+                                    is_default=True,
+                                )
+                                hero_obj.is_default = True
+                                hero_obj.save()
 
                         # 상점 연락처
                         if restaurant.get("publicContact", None) and restaurant["publicContact"].get("publicPhoneNumber", None):
