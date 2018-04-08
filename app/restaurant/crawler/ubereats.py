@@ -274,10 +274,9 @@ class UbereatsCrawler():
                         category_title = category_item['title']
                         category_imgs = category_item.get('suggestedStoreItems', None)
                         if category_title and category_imgs:
-                            if FoodCategory.objects.filter(name=category_title).exists():
-                                category_obj = FoodCategory.objects.get(name=category_title)
-                                category_obj.logo_url = category_imgs[0]["imageUrl"]
-                                category_obj.save()
+                            if FoodCategory.objects.filter(name__contains=category_title).exists():
+                                category_obj = FoodCategory.objects.filter(name__contains=category_title)
+                                category_obj.update(logo_url=category_imgs[0]["imageUrl"])
 
                 except Exception as e:
                     print(e)
