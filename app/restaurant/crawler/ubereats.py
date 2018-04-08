@@ -3,6 +3,7 @@ import traceback
 from uuid import UUID
 
 import requests
+from django.utils.text import slugify
 
 from ..models import ServiceCity, Restaurant, FoodCategory, RestaurantLogo, RestaurantContact, RestaurantSectionHours, \
     MenuSections, Items
@@ -50,7 +51,7 @@ class UbereatsCrawler():
                 cityName = city["cityName"]
                 cityLat = city["cityLat"]
                 cityLng = city["cityLng"]
-                slug = city.get("slug", cityName)
+                slug = slugify(cityName) #city.get("slug", cityName)
                 lat = city.get("lat", '')
                 lng = city.get("lng", '')
                 city_obj, created = ServiceCity.objects.get_or_create(
