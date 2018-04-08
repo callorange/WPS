@@ -12,6 +12,18 @@ Elastic Beanstalk에 Nginx-uWSGI-Django로 구성된 Docker 이미지를 배포�
 - Python (3.6)
 - .secrets/의 JSON파일 작성 (아래의 .secrets항목 참조)
 - Docker설치 필요
+- postgreSQL DB 생성시 LC_COLLATE=C, template0 으로 설정
+    - 기본값으로 생성시 한글정렬이 안됨
+    ```sql
+    ﻿CREATE DATABASE "<dbname>"
+        WITH 
+        OWNER = <onwer name>
+        ENCODING = 'UTF8'
+        LC_COLLATE = 'C'
+        LC_CTYPE = 'en_US.UTF-8'
+        TABLESPACE = pg_default
+        CONNECTION LIMIT = -1;
+    ```
 
 #### GeoDjango 설정
 식당 위치기반 검색에 Geometry를 사용하므로 사용하는 시스템에 따라 필요 라이브러리 추가 설치가 되야함.  

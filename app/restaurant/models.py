@@ -21,6 +21,7 @@ class ServiceCity(models.Model):
     class Meta:
         verbose_name = '서비스 도시'
         verbose_name_plural = '서비스 도시들'
+        ordering = ['name']
 
 
 class FoodCategory(models.Model):
@@ -34,6 +35,7 @@ class FoodCategory(models.Model):
     class Meta:
         verbose_name = '식당 카테고리'
         verbose_name_plural = '식당 카테고리들'
+        ordering = ['name']
 
 
 class Restaurant(models.Model):
@@ -65,6 +67,7 @@ class Restaurant(models.Model):
     class Meta:
         verbose_name = '식당'
         verbose_name_plural = '식당들'
+        ordering = ['uuid', 'title']
 
 
 class RestaurantLogo(models.Model):
