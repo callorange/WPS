@@ -1,5 +1,9 @@
+from collections import OrderedDict
+
 from django.db.models import Count
 from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import FoodCategorySerializer
@@ -10,9 +14,24 @@ class Restaurant(APIView):
     pass
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+    def get_paginated_response(self, data):
+        return Response(OrderedDict([
+            ('count', self.page.paginator.count),
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('categories', data)
+        ]))
+
+
 class FoodCategoryView(ListAPIView):
     model = FoodCategory
     serializer_class = FoodCategorySerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         order_option = self.request.query_params.get('order', '')
@@ -21,13 +40,3 @@ class FoodCategoryView(ListAPIView):
             'cnt': FoodCategory.objects.annotate(restaurant_count=Count('restaurant')).order_by('-restaurant_count')
         }
         return category_query.get(order_option, FoodCategory.objects.all())
-
-    def list(self, request, *args, **kwargs):
-        # call the original 'list' to get the original response
-        response = super(FoodCategoryView, self).list(request, *args, **kwargs)
-
-        # customize the response data
-        response.data = {"categories": response.data}
-
-        # return response with this custom representation
-        return response
