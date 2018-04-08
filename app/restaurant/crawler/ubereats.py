@@ -5,6 +5,7 @@ from uuid import UUID
 
 import requests
 from PIL import Image
+from django.contrib.gis.geos import Point
 from django.utils.text import slugify
 
 from ..models import ServiceCity, Restaurant, FoodCategory, RestaurantLogo, RestaurantContact, RestaurantSectionHours, \
@@ -181,6 +182,7 @@ class UbereatsCrawler():
                             formatted_address=restaurant["location"]["address"]["formattedAddress"],
                             latitude=restaurant["location"]["latitude"],
                             longtitude=restaurant["location"]["longitude"],
+                            geo_point=Point(y=restaurant["location"]["latitude"], x=restaurant["location"]["longitude"], srid=4326)
                         )
 
                         # 카테고리랑 태그를 만든다.

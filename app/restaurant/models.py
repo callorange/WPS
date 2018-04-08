@@ -1,6 +1,6 @@
 import uuid
 
-from django.db import models
+from django.contrib.gis.db import models
 from django.db.models import Max
 
 
@@ -55,6 +55,7 @@ class Restaurant(models.Model):
 
     latitude = models.FloatField(blank=True, null=True, verbose_name="위도",)
     longtitude = models.FloatField(blank=True, null=True, verbose_name="경도",)
+    geo_point = models.PointField(srid=4326, verbose_name="Geometry")
 
     tags = models.ManyToManyField(FoodCategory, related_name="restaurant", verbose_name="식당 카테고리")
 
@@ -133,10 +134,8 @@ class MenuSections(models.Model):
         chk = MenuSections.objects.filter(
             restaurant=self.restaurant
         )
-        print(chk.exists())
         if chk.exists() is True:
             max_asc = chk.aggregate(Max('ascending'))
-            print(self.ascending, max_asc['ascending__max'])
             self.ascending = max_asc['ascending__max'] + 1
         super().save(*args, **kwargs)
 
