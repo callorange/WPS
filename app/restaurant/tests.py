@@ -34,4 +34,4 @@ class AddressSearch(APITestCase):
         self.assertEqual(
             0,
             Restaurant.objects.filter(geo_point__distance_lte=(search_point, D(km=1))).count()
-
+        )
