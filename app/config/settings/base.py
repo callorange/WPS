@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'members',
     'utils',
     'address.apps.AddressConfig',
+    'restaurant.apps.RestaurantConfig',
 ]
 
 MIDDLEWARE = [
