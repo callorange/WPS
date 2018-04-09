@@ -62,14 +62,21 @@ Elastic Beanstalk에 Nginx-uWSGI-Django로 구성된 Docker 이미지를 배포�
           ```bash
           # mac - homebrew
           $ brew install spatialite-tools
+          # linux
+          $ sudo apt-get install spatialite-bin
+          $ ldconfig -p | grep spatial # 파일 확인
+            libspatialite.so.5 (libc6,x86-64) => /usr/lib/x86_64-linux-gnu/libspatialite.so.5
           ```
-          > For example, on Debian-based distributions, try to install the *spatialite-bin* package. For distributions that package SpatiaLite 4.2+, install *libsqlite3-mod-spatialite*
-          SPATIALITE_LIBRARY_PATH setting required for SpatiaLite 4.2+
-          If you’re using SpatiaLite 4.2+, you must put this in your settings.py:  
-          ```SPATIALITE_LIBRARY_PATH = 'mod_spatialite'```
         - settings.py 설정 
           ```python
+          # MAC
           SPATIALITE_LIBRARY_PATH='/usr/local/lib/mod_spatialite.dylib'
+          # Linux(ubuntu)
+          SPATIALITE_LIBRARY_PATH='/usr/lib/x86_64-linux-gnu/libspatialite.so.5'
+          ```
+        - Mac에서 pyenv로 실행시 오류가 발생하면. python을 해당 변수를 준 상태로 재설치[참조](https://qiita.com/Czerny/items/5ad877ed0fdbe77602fa)
+          ```bash
+            $ LDFLAGS="-L/usr/local/opt/sqlite/lib -L/usr/local/opt/zlib/lib" CPPFLAGS="-I/usr/local/opt/sqlite/include -I/usr/local/opt/zlib/include" PYTHON_CONFIGURE_OPTS="--enable-loadable-sqlite-extensions" pyenv install 3.6.2
           ```
 3. settings.py - Database Engine
     - [GeoDjango - Spatial Backends](https://docs.djangoproject.com/en/2.0/ref/contrib/gis/db-api/#geodjango-database-api)
