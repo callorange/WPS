@@ -7,6 +7,6 @@ before_install:
 - tar xvf secrets.tar
 - sudo apt-get install binutils libproj-dev gdal-bin spatialite-bin
 install:
-- pip install -r .requirements/requirements.txt
+- pip install -r .requirements/production.txt
 script:
 - "./app/manage.py test"
