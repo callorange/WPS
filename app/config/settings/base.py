@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'raven.contrib.django.raven_compat',
     'rest_framework',
@@ -108,6 +109,7 @@ INSTALLED_APPS = [
     'members',
     'utils',
     'address.apps.AddressConfig',
+    'restaurant.apps.RestaurantConfig',
 ]
 
 MIDDLEWARE = [
