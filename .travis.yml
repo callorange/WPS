@@ -19,4 +19,4 @@ before_script:
   - psql -U postgres -c "CREATE DATABASE \"fc-project\" WITH OWNER=song LC_COLLATE='C' TEMPLATE template0;"
   - psql -U postgres -d fc-project -c "CREATE EXTENSION postgis;"
 script:
-- "./app/manage.py test --settings=config.settgins.dev"
+- "./app/manage.py test --settings=config.settings.dev"
