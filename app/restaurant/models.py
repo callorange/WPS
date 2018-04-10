@@ -61,6 +61,8 @@ class Restaurant(models.Model):
 
     tags = models.ManyToManyField(FoodCategory, related_name="restaurant", verbose_name="식당 카테고리")
 
+    rating = models.DecimalField(max_digits=2, decimal_places=1, default=0)
+
     def __str__(self):
         return f'{self.title} - {self.address1}'
 
@@ -72,7 +74,7 @@ class Restaurant(models.Model):
 
 class RestaurantLogo(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="logos", verbose_name="식당",)
-    url = models.CharField(blank=True, null=True, max_length=200, verbose_name="경도",)
+    url = models.CharField(blank=True, null=True, max_length=200, verbose_name="이미지 URL",)
     width = models.SmallIntegerField(default=0, verbose_name="넓이",)
     height = models.SmallIntegerField(default=0, verbose_name="높이",)
     is_default = models.BooleanField(default=False, verbose_name="기본 이미지", help_text="식당 이미지가 여러개일 경우 기본값")
@@ -91,7 +93,7 @@ class RestaurantContact(models.Model):
     public_phone_number = models.CharField(blank=True, null=True, max_length=50, verbose_name="전화번호",)
 
     def __str__(self):
-        return "{} - {}".format(self.restaurant, self.public_phone_number)
+        return self.public_phone_number
 
     class Meta:
         ordering = ['restaurant', 'public_phone_number']

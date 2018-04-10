@@ -19,24 +19,46 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
     result_name = 'results'
+    params_name = None
 
     def paginate_queryset(self, queryset, request, view=None):
-        self.result_name = view.result_name
+        if hasattr(view, 'result_name'):
+            self.result_name = view.result_name
+        if hasattr(view, 'params_name'):
+            self.params_name = view.params_name
+
         return super(StandardResultsSetPagination, self).paginate_queryset(queryset, request, view=None)
 
     def get_paginated_response(self, data):
-        return Response(OrderedDict([
-            ('count', self.page.paginator.count),
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            (self.result_name, data)
-        ]))
+        if self.params_name:
+            if self.request.method == "GET":
+                params = self.request.query_params
+
+            if self.request.method == "POST":
+                params = self.request.data
+
+            res = Response(OrderedDict([
+                ('count', self.page.paginator.count),
+                ('next', self.get_next_link()),
+                ('previous', self.get_previous_link()),
+                (self.params_name, params),
+                (self.result_name, data),
+            ]))
+        else:
+            res = Response(OrderedDict([
+                ('count', self.page.paginator.count),
+                ('next', self.get_next_link()),
+                ('previous', self.get_previous_link()),
+                (self.result_name, data),
+            ]))
+        return res
 
 
 class RestaurantView(ListAPIView):
     serializer_class = RestaurantSerializer
     pagination_class = StandardResultsSetPagination
     result_name = 'restaurants'
+    params_name = 'search_params'
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.query_params)
