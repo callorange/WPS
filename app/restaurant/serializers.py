@@ -86,8 +86,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     def get_eta_range(self, obj):
         return {
-            'min': 10,
-            'max': 20,
+            'min': 20+int(obj.distance.m/5/60),
+            'max': 30+int(obj.distance.m/5/60),
         }
 
     def get_address(self, obj):
