@@ -12,7 +12,7 @@ install:
 - pip install -r .requirements/dev.txt
 before_script:
   - psql -U postgres -c "CREATE USER song WITH SUPERUSER PASSWORD 'dnflwlq';"
-  - psql -U postgres -c "CREATE DATABASE \"fc-project3\" WITH OWNER=song LC_COLLATE='C' TEMPLATE template0;"
+  - psql -U postgres -c "CREATE DATABASE \"fc-project\" WITH OWNER=song LC_COLLATE='C' TEMPLATE template0;"
   - psql -U song -d fc-project -c "CREATE EXTENSION postgis;"
 script:
 - "./app/manage.py test --settings=config.settgins.dev"
