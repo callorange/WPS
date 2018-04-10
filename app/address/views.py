@@ -1,4 +1,5 @@
 import functools
+import time
 
 import requests
 import asyncio
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from .serializers import RequestSerializer
+from .serializers import RequestSerializer, GeoSearchRequestSerializer
 
 __all__ = [
     'AddressSearch',
@@ -24,11 +25,12 @@ def geoip_check(request):
     try:
         return g.city(request.META.get('REMOTE_ADDR', ''))
     except Exception as e:
-        return {
-            'latitude': 37.5156778,
-            'longitude': 127.0213856,
-            'country_code': 'KO'
-        }
+        return None
+        # return {
+        #     'latitude': 37.5156778,
+        #     'longitude': 127.0213856,
+        #     'country_code': 'KO'
+        # }
 
 
 class AddressSearch(APIView):
@@ -50,42 +52,31 @@ class AddressSearch(APIView):
 
         client_location = geoip_check(request)
 
-        place_params = {
-            'key': settings.GOOGLE_PLACE_KEY,
-            'input': request.data["search_text"],
-            'location': ','.join([str(client_location['latitude']), str(client_location['longitude'])]),
-            'radius': '50000',
-            'language': client_location['country_code'],
-        }
-        place_detail_params = {
-            'key': settings.GOOGLE_PLACE_KEY,
-            'placeid': '',
-            'language': client_location['country_code'],
-        }
+        if client_location:
+            place_params = {
+                'key': settings.GOOGLE_PLACE_KEY,
+                'input': request.data["search_text"],
+                'location': ','.join([str(client_location['latitude']), str(client_location['longitude'])]),
+                'radius': '50000',
+                'language': request.data.get("language", "ko"),
+            }
+        else:
+            place_params = {
+                'key': settings.GOOGLE_PLACE_KEY,
+                'input': request.data["search_text"],
+                'language': request.data.get("language", "ko"),
+            }
 
         places = requests.get(place_url, params=place_params)
         if places.status_code == 200:
-            place_list = []
 
-            # for place in places.json()["predictions"][:5]:
-            #     place_detail_params["placeid"] = place['place_id']
-            #     place_detail = requests.get(place_detail_url, params=place_detail_params)
-            #     place_detail_json = place_detail.json()
-            #     place_list.append({
-            #         "name": place_detail_json["result"]["name"],
-            #         "place_id": place_detail_json["result"]["place_id"],
-            #         "vicinity": place_detail_json["result"]["vicinity"],
-            #         "address_components": place_detail_json["result"]["address_components"],
-            #         "formatted_address": place_detail_json["result"]["formatted_address"],
-            #         "geometry": place_detail_json["result"]["geometry"]["location"],
-            #     })
-
-            async def fetch(place_id):
+            async def fetch(place_id, num):
                 params = {
                     'key': settings.GOOGLE_PLACE_KEY,
                     'placeid': place_id,
-                    'language': 'ko',
+                    'language': request.data.get("language", "ko"),
                 }
+
                 a_loop = asyncio.get_event_loop()
                 response = await a_loop.run_in_executor(
                     None,
@@ -95,36 +86,31 @@ class AddressSearch(APIView):
                         params=params
                     )
                 )
-                data = await a_loop.run_in_executor(None, response.json)
-                place_list.append({
-                    "name": data["result"]["name"],
-                    "place_id": data["result"]["place_id"],
-                    "vicinity": data["result"]["vicinity"],
-                    "address_components": data["result"]["address_components"],
-                    "formatted_address": data["result"]["formatted_address"],
-                    "geometry": data["result"]["geometry"]["location"],
-                })
+                data = response.json()
+                data["num"] = num
                 return data
 
             tasks = []
-            for place in places.json()["predictions"][:5]:
-                tasks.append(fetch(place['place_id']))
+
+            for i, place in enumerate(places.json()["predictions"][:5]):
+                tasks.append(fetch(place['place_id'], i))
 
             loop = asyncio.SelectorEventLoop()
             asyncio.set_event_loop(loop)
             r1, r2 = loop.run_until_complete(asyncio.wait(tasks))
-
-            # for t in r1:
-            #     place_detail_json = t.result()
-            #     place_list.append({
-            #         "name": place_detail_json["result"]["name"],
-            #         "place_id": place_detail_json["result"]["place_id"],
-            #         "vicinity": place_detail_json["result"]["vicinity"],
-            #         "address_components": place_detail_json["result"]["address_components"],
-            #         "formatted_address": place_detail_json["result"]["formatted_address"],
-            #         "geometry": place_detail_json["result"]["geometry"]["location"],
-            #     })
             loop.close()
+
+            place_list = ['' for a in range(0, i+1)]
+            for t in r1:
+                place_detail_json = t.result()
+                place_list[place_detail_json["num"]] = {
+                    "name": place_detail_json["result"]["name"],
+                    "place_id": place_detail_json["result"]["place_id"],
+                    "vicinity": place_detail_json["result"].get("vicinity", ""),
+                    "address_components": place_detail_json["result"]["address_components"],
+                    "formatted_address": place_detail_json["result"]["formatted_address"],
+                    "geometry": place_detail_json["result"]["geometry"]["location"],
+                }
 
             return place_list
         return []
@@ -133,7 +119,7 @@ class AddressSearch(APIView):
 class GeoSearch(APIView):
 
     def post(self, request, format=None):
-        serializer = RequestSerializer(data=request.data)
+        serializer = GeoSearchRequestSerializer(data=request.data)
 
         if serializer.is_valid():
             search_result = dict(serializer.data)
@@ -151,8 +137,6 @@ class GeoSearch(APIView):
                 'longitude': request.data.get('longitude', None),
                 'country_code': 'KO'
             }
-        else:
-            client_location = geoip_check(request)
 
         place_params = {
             'key': settings.GOOGLE_PLACE_KEY,
@@ -160,7 +144,7 @@ class GeoSearch(APIView):
             'radius': '50000',
             'rankyby': 'distance',
             'keyword': request.data["search_text"],
-            'language': client_location['country_code'],
+            'language': request.data.get("language", "ko"),
         }
         places = requests.get(place_url, params=place_params)
         if places.status_code == 200:
