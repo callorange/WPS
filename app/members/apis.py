@@ -1,9 +1,17 @@
-from rest_framework import status
+from django.contrib.auth import get_user_model
+from rest_framework import status, permissions, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import UserSerializer
+
+User = get_user_model()
+
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class UserCreate(APIView):
