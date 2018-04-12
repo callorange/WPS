@@ -5,6 +5,7 @@ from django.contrib.gis.geos import *
 from django.contrib.gis.measure import D
 
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -98,4 +99,8 @@ class FoodCategoryView(ListAPIView):
 
 class RestaurantMenuView(ListAPIView):
     serializer_class = RestaurantMenuSerializer
-    queryset = MenuSections.objects.all()
+
+    def get_queryset(self):
+        query = MenuSections.objects.all()
+        query = query.filter(restaurant=self.kwargs['restaurant'])
+        return query
