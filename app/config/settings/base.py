@@ -94,6 +94,10 @@ set_config(secrets, module_name=__name__, start=True)
 
 AUTH_USER_MODEL = 'members.User'
 
+CORS_ORIGIN_WHITELIST = (
+    'localhost:4200',
+)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -101,17 +105,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 
     'members',
     'utils',
     'address.apps.AddressConfig',
+    'restaurant.apps.RestaurantConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
