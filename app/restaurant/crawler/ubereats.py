@@ -1,3 +1,5 @@
+import asyncio
+import functools
 import json
 import traceback
 from io import BytesIO
@@ -167,7 +169,8 @@ class UbereatsCrawler():
                         print("         *{}".format(restaurant["title"]))
 
                         # 레스토랑을 만든다. ( 가능하면 업데이트 )
-                        restaurant_obj, restaurant_created = Restaurant.objects.update_or_create(
+                        restaurant_obj, restaurant_created = Restaurant.objects.get_or_create(uuid=restaurant["uuid"])
+                        Restaurant.objects.filter(uuid=restaurant["uuid"]).update(
                             uuid=restaurant["uuid"],
                             title=restaurant["title"],
                             parent_chain_deprecated=restaurant.get('parentChainDeprecated', ''),
@@ -286,58 +289,73 @@ class UbereatsCrawler():
     def get_restaurant_detail(self, source_stores):
         print("# Service restaurant detail Job:")
 
+        tasks = []
+        for num, store in enumerate(source_stores):
+            tasks.append(self._get_restaurant_detail(store, num))
+
+        loop = asyncio.SelectorEventLoop()
+        asyncio.set_event_loop(loop)
+        r1, r2 = loop.run_until_complete(asyncio.wait(tasks))
+        loop.close()
+
+    async def _get_restaurant_detail(self, store, job_num):
         # 상점메뉴 업데이트
         search_store_info = 'https://www.ubereats.com/rtapi/eats/v2/stores/'
+        search_store_info_url = search_store_info + str(store.uuid)
 
-        for store in source_stores:
+        a_loop = asyncio.get_event_loop()
+        response = await a_loop.run_in_executor(
+            None,
+            functools.partial(
+                requests.get,
+                search_store_info_url,
+            )
+        )
 
-            search_store_info_url = search_store_info + str(store.uuid)
-            resposne = self.req.get(search_store_info_url)
+        if response.status_code == 200:
+            res_json = response.json()
+            print("       ** Job Num: {:4}, Store: {}".format(job_num, store.title))
+            try:
+                # 메뉴 섹션
+                menu_asc = 0
+                for menu_key, menu_section in res_json['store']['subsectionsMap'].items():
+                    menu_asc = menu_asc + 1
+                    # print("         *{}".format(menu_section["title"]))
+                    if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
+                        section_obj = MenuSections.objects.create(
+                            uuid=menu_section['uuid'],
+                            restaurant=store,
+                            title=menu_section['title'],
+                            ascending=menu_asc,
+                        )
 
-            if resposne.status_code == 200:
-                res_json = resposne.json()
-                print("       ** {}".format(store.title))
-                try:
-                    # 메뉴 섹션
-                    menu_asc = 0
-                    for menu_key, menu_section in res_json['store']['subsectionsMap'].items():
-                        menu_asc = menu_asc + 1
-                        print("         *{}".format(menu_section["title"]))
-                        if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
-                            section_obj = MenuSections.objects.create(
-                                uuid=menu_section['uuid'],
+                        for menu_item in menu_section['displayItems']:
+                            Items.objects.get_or_create(
+                                uuid=menu_item['uuid'],
                                 restaurant=store,
-                                title=menu_section['title'],
-                                ascending=menu_asc,
+                                section=section_obj,
                             )
 
-                            for menu_item in menu_section['displayItems']:
-                                Items.objects.get_or_create(
-                                    uuid=menu_item['uuid'],
-                                    restaurant=store,
-                                    section=section_obj,
-                                )
+                # 상품 넣기
+                for menu_key, menu_item in res_json['store']['itemsMap'].items():
+                    # print("         *{}".format(menu_item["title"]))
+                    if Items.objects.filter(uuid=menu_item['uuid']).exists():
+                        item_obj = Items.objects.get(uuid=menu_item['uuid'])
+                        item_obj.title = menu_item['title']
+                        item_obj.description = menu_item.get('itemDescription', '')
+                        item_obj.disable_description = menu_item.get('disableItemInstructions', False)
+                        item_obj.price = menu_item['price']
+                        item_obj.image_url = menu_item.get('imageUrl', menu_item.get('rawImageUrl', ''))
+                        item_obj.alcoholic_items = menu_item.get('alcoholicItems', 0)
+                        item_obj.created_at = menu_item['createdAt']
+                        item_obj.save()
 
-                    # 상품 넣기
-                    for menu_key, menu_item in res_json['store']['itemsMap'].items():
-                        print("         *{}".format(menu_item["title"]))
-                        if Items.objects.filter(uuid=menu_item['uuid']).exists():
-                            item_obj = Items.objects.get(uuid=menu_item['uuid'])
-                            item_obj.title = menu_item['title']
-                            item_obj.description = menu_item.get('itemDescription', '')
-                            item_obj.disable_description = menu_item.get('disableItemInstructions', False)
-                            item_obj.price = menu_item['price']
-                            item_obj.image_url = menu_item.get('imageUrl', menu_item.get('rawImageUrl', ''))
-                            item_obj.alcoholic_items = menu_item.get('alcoholicItems', 0)
-                            item_obj.created_at = menu_item['createdAt']
-                            item_obj.save()
-
-                except Exception as e:
-                    print(e)
-                    traceback.print_exc()
-            else:
-                print('status: ', resposne.status_code)
-                raise ValueError
+            except Exception as e:
+                print(e)
+                traceback.print_exc()
+        else:
+            print('status: ', response.status_code)
+            raise ValueError
 
     def del_category_logo_null(self):
         FoodCategory.objects.filter(logo_url__isnull=True).delete()
