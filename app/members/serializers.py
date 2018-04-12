@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         ],
     )
     password = serializers.CharField(min_length=5, write_only=True)
-    img_profile = serializers.ImageField(default='')
+    img_profile = serializers.ImageField(default='img_profile/profile_dummy.png')
 
     def create(self, validated_data):
         print(validated_data)
