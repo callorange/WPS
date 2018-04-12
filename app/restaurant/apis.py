@@ -4,14 +4,13 @@ from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import *
 from django.contrib.gis.measure import D
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .serializers import FoodCategorySerializer, RestaurantSerializer
-from .models import FoodCategory, Restaurant
+from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer
+from .models import FoodCategory, Restaurant, MenuSections
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -22,10 +21,12 @@ class StandardResultsSetPagination(PageNumberPagination):
     params_name = None
 
     def paginate_queryset(self, queryset, request, view=None):
-        if hasattr(view, 'result_name'):
-            self.result_name = view.result_name
-        if hasattr(view, 'params_name'):
-            self.params_name = view.params_name
+        if hasattr(view, 'page_size'):
+            self.page_size = view.page_size
+        if hasattr(view, 'page_result_name'):
+            self.result_name = view.page_result_name
+        if hasattr(view, 'page_params_name'):
+            self.params_name = view.page_params_name
 
         return super(StandardResultsSetPagination, self).paginate_queryset(queryset, request, view=None)
 
@@ -57,8 +58,8 @@ class StandardResultsSetPagination(PageNumberPagination):
 class RestaurantView(ListAPIView):
     serializer_class = RestaurantSerializer
     pagination_class = StandardResultsSetPagination
-    result_name = 'restaurants'
-    params_name = 'search_params'
+    page_result_name = 'restaurants'
+    page_params_name = 'search_params'
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.query_params)
@@ -77,7 +78,10 @@ class RestaurantView(ListAPIView):
         queryset = queryset.annotate(distance=Distance('geo_point', pnt))
 
         if search_text is not None:
-            queryset = queryset.filter(title__contains=search_text)
+            queryset = queryset.filter(
+                Q(title__contains=search_text) |
+                Q(tags__name__contains=search_text)
+            )
 
         return queryset.order_by('distance')
 
@@ -85,7 +89,8 @@ class RestaurantView(ListAPIView):
 class FoodCategoryView(ListAPIView):
     serializer_class = FoodCategorySerializer
     pagination_class = StandardResultsSetPagination
-    result_name = 'categories'
+    page_size = 50
+    page_result_name = 'categories'
 
     def get_queryset(self):
         order_option = self.request.query_params.get('order', '')
@@ -94,3 +99,12 @@ class FoodCategoryView(ListAPIView):
             'cnt': FoodCategory.objects.annotate(restaurant_count=Count('restaurant')).order_by('-restaurant_count')
         }
         return category_query.get(order_option, FoodCategory.objects.all())
+
+
+class RestaurantMenuView(ListAPIView):
+    serializer_class = RestaurantMenuSerializer
+
+    def get_queryset(self):
+        query = MenuSections.objects.all()
+        query = query.filter(restaurant=self.kwargs['restaurant'])
+        return query

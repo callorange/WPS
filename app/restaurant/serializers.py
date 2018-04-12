@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours
+from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
+    Items
 
 
 class FoodCategorySerializer(serializers.ModelSerializer):
@@ -112,3 +113,27 @@ class RestaurantSerializer(serializers.ModelSerializer):
             return obj.logos.get(is_default=True).url
 
         return obj.logos.last().url
+
+
+class ItemsSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Items
+        fields = '__all__'
+
+    def get_price(self, obj):
+        return int(obj.price / 100)
+
+
+class RestaurantMenuSerializer(serializers.ModelSerializer):
+    items = ItemsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = MenuSections
+        fields = [
+            'uuid',
+            'title',
+
+            'items',
+        ]

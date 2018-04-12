@@ -145,7 +145,7 @@ class MenuSections(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        ordering = ['restaurant', 'ascending']
+        ordering = ['restaurant', '-ascending']
         verbose_name = '식당 메뉴'
         verbose_name_plural = '식당 메뉴들'
 
