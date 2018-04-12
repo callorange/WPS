@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours
+from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections
 
 
 class FoodCategorySerializer(serializers.ModelSerializer):
@@ -112,3 +112,10 @@ class RestaurantSerializer(serializers.ModelSerializer):
             return obj.logos.get(is_default=True).url
 
         return obj.logos.last().url
+
+
+class RestaurantMenuSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MenuSections
+        fields = '__all__'
