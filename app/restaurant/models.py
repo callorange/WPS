@@ -57,7 +57,7 @@ class Restaurant(models.Model):
 
     latitude = models.FloatField(blank=True, null=True, verbose_name="위도",)
     longtitude = models.FloatField(blank=True, null=True, verbose_name="경도",)
-    geo_point = models.PointField(srid=4326, verbose_name="Geometry")
+    geo_point = models.PointField(srid=4326, verbose_name="Geometry", null=True)
 
     tags = models.ManyToManyField(FoodCategory, related_name="restaurant", verbose_name="식당 카테고리")
 
@@ -145,7 +145,7 @@ class MenuSections(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        ordering = ['restaurant', 'ascending']
+        ordering = ['restaurant', '-ascending']
         verbose_name = '식당 메뉴'
         verbose_name_plural = '식당 메뉴들'
 
