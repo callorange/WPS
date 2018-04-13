@@ -41,6 +41,9 @@ SECRET_PRODUCTION = os.path.join(SECRET_DIR, 'production.json')
 
 secrets = json.loads(open(SECRET_BASE, 'rt').read())
 
+# default image
+DEFAULT_IMAGE_PATH = 'django_fields/porfile_dummy.png'
+
 
 def set_config(obj, module_name=None, start=False):
     def eval_obj(obj):
@@ -88,8 +91,6 @@ def set_config(obj, module_name=None, start=False):
 # raven 모듈을 importlib을 사용해 가져온 후 현재 모듈에 'raven'이라는 이름으로 할당
 setattr(sys.modules[__name__], 'raven', importlib.import_module('raven'))
 set_config(secrets, module_name=__name__, start=True)
-
-STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'members.User'
 

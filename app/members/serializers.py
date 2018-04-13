@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
+from rest_framework.fields import ImageField
 from rest_framework.validators import UniqueValidator
 
 User = get_user_model()
@@ -17,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         ],
     )
     password = serializers.CharField(min_length=5, write_only=True)
-    img_profile = serializers.ImageField(default=None)
+    img_profile = serializers.ImageField(default='profile_dummy.png')
 
     def create(self, validated_data):
         print(validated_data)
@@ -44,5 +45,3 @@ class UserSerializer(serializers.ModelSerializer):
             'phone_number',
             'img_profile',
         ]
-
-
