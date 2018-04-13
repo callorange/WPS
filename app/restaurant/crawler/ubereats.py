@@ -53,12 +53,11 @@ class UbereatsCrawler():
             add = 0
             mod = 0
             for city in cities:
+                print(city)
                 cityName = city["cityName"]
-                cityLat = city["cityLat"]
-                cityLng = city["cityLng"]
+                cityLat = city.get("cityLat", city.get("lat", ''))
+                cityLng = city.get("cityLng", city.get("lng", ''))
                 slug = slugify(cityName) #city.get("slug", cityName)
-                lat = city.get("lat", '')
-                lng = city.get("lng", '')
                 city_obj, created = ServiceCity.objects.get_or_create(
                     name=cityName,
                 )
