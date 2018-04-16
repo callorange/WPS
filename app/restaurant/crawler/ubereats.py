@@ -320,20 +320,21 @@ class UbereatsCrawler():
                 for menu_key, menu_section in res_json['store']['subsectionsMap'].items():
                     menu_asc = menu_asc + 1
                     # print("         *{}".format(menu_section["title"]))
-                    if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
-                        section_obj = MenuSections.objects.create(
-                            uuid=menu_section['uuid'],
-                            restaurant=store,
-                            title=menu_section['title'],
-                            ascending=menu_asc,
-                        )
-
-                        for menu_item in menu_section['displayItems']:
-                            Items.objects.get_or_create(
-                                uuid=menu_item['uuid'],
+                    if "원산지" not in menu_section["title"]:
+                        if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
+                            section_obj = MenuSections.objects.create(
+                                uuid=menu_section['uuid'],
                                 restaurant=store,
-                                section=section_obj,
+                                title=menu_section['title'],
+                                ascending=menu_asc,
                             )
+
+                            for menu_item in menu_section['displayItems']:
+                                Items.objects.get_or_create(
+                                    uuid=menu_item['uuid'],
+                                    restaurant=store,
+                                    section=section_obj,
+                                )
 
                 # 상품 넣기
                 for menu_key, menu_item in res_json['store']['itemsMap'].items():
