@@ -1,7 +1,9 @@
+import math
+
 from rest_framework import serializers
 
 from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
-    Items
+    Items, RestaurantEndorsement
 
 
 class FoodCategorySerializer(serializers.ModelSerializer):
@@ -10,6 +12,40 @@ class FoodCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodCategory
         fields = ['uuid', 'name', 'logo_url', 'restaurant_count']
+
+
+class EndorsementSerializer(serializers.ModelSerializer):
+    backgroundColor = serializers.SerializerMethodField()
+    iconColor = serializers.SerializerMethodField()
+    textColor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RestaurantEndorsement
+        fields = [
+            'backgroundColor',
+            'iconColor',
+            'icon_url',
+            'text',
+            'textColor',
+        ]
+
+    def get_backgroundColor(self, obj):
+        return {
+            'alpha': obj.background_color_alpha,
+            'color': obj.background_color,
+        }
+
+    def get_iconColor(self, obj):
+        return {
+            'alpha': obj.icon_color_alpha,
+            'color': obj.icon_color,
+        }
+
+    def get_textColor(self, obj):
+        return {
+            'alpha': obj.text_color_alpha,
+            'color': obj.text_color,
+        }
 
 
 class RestaurantLogoSerializer(serializers.ModelSerializer):
@@ -41,7 +77,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     search_text = serializers.CharField(write_only=True, required=False)
 
     r_status = serializers.CharField(read_only=True)
-    r_visible = serializers.CharField(read_only=True)
+    rating = serializers.DecimalField(read_only=True, max_digits=2, decimal_places=1, coerce_to_string=False)
     address = serializers.SerializerMethodField()
     position = serializers.SerializerMethodField()
     eta_range = serializers.SerializerMethodField()
@@ -51,6 +87,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     logos = RestaurantLogoSerializer(read_only=True, many=True)
     open_time = RestaurantSectionHoursSerializer(read_only=True, many=True)
     contact = serializers.StringRelatedField(many=True)
+    endorsement = EndorsementSerializer(read_only=True)
 
     class Meta:
         model = Restaurant
@@ -76,23 +113,32 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'logos',
             'open_time',
             'contact',
+            'endorsement',
         ]
 
     def get_position(self, obj):
-        return {
-            'latitude': obj.latitude,
-            'longtitude': obj.longtitude,
-            'distance': int(obj.distance.m),
-        }
+        if hasattr(obj, 'distance'):
+            return {
+                'latitude': obj.latitude,
+                'longtitude': obj.longtitude,
+                'distance': int(obj.distance.m),
+            }
+        else:
+            return {
+                'latitude': obj.latitude,
+                'longtitude': obj.longtitude,
+            }
 
     def get_eta_range(self, obj):
-        return {
-            'min': 20+int(obj.distance.m/5/60),
-            'max': 30+int(obj.distance.m/5/60),
-        }
+        if hasattr(obj, 'distance'):
+            return {
+                'min': 20+math.ceil(obj.distance.m/1000)*5,
+                'max': 30+math.ceil(obj.distance.m/1000)*5,
+            }
+        else:
+            return None;
 
     def get_address(self, obj):
-
         return {
             'address1': obj.address1,
             'apt_suite': obj.apt_suite,
@@ -104,7 +150,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
         }
 
     def get_logo(self, obj):
-        agent = self.context['request'].META['HTTP_USER_AGENT'].lower()
+        agent = self.context['request'].META.get('HTTP_USER_AGENT', '').lower()
         if 'iphone' in agent or 'ipad' in agent:
             if obj.logos.filter(width=750).exists():
                 return obj.logos.get(width=750).url
@@ -117,10 +163,20 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
 class ItemsSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
+    endorsement = EndorsementSerializer(read_only=True)
 
     class Meta:
         model = Items
-        fields = '__all__'
+        fields = [
+            'uuid',
+            'price',
+            'title',
+            'description',
+            'disable_description',
+            'image_url',
+            'alcoholic_items',
+            'endorsement',
+        ]
 
     def get_price(self, obj):
         return int(obj.price / 100)

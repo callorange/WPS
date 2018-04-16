@@ -5,7 +5,7 @@ from django.contrib.gis.geos import *
 from django.contrib.gis.measure import D
 
 from django.db.models import Count, Q
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -84,6 +84,12 @@ class RestaurantView(ListAPIView):
             )
 
         return queryset.order_by('distance')
+
+
+class RestaurantInfoView(RetrieveAPIView):
+    serializer_class = RestaurantSerializer
+    queryset = Restaurant.objects.all()
+    lookup_url_kwarg = 'restaurant'
 
 
 class FoodCategoryView(ListAPIView):
