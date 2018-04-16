@@ -10,12 +10,55 @@ from restaurant import apis
 from restaurant.models import Restaurant, RestaurantLogo, FoodCategory
 
 
+class RestaurantInfo(APITestCase):
+    VIEW = apis.RestaurantInfoView
+    URL_PATH = '/api/restaurant/8c8acbe5-6eee-4aee-8588-4096704a1abc/'
+    URL_NAME = 'restaurant:info'
+
+    def test1_url(self):
+        """
+        레스토랑 정보 조회 URL과 URL Name이 정상적으로 할당 되었는지 체크한다.
+        :return:
+        """
+        reverse_url = reverse(self.URL_NAME, kwargs={'restaurant': '8c8acbe5-6eee-4aee-8588-4096704a1abc'})
+        self.assertEqual(self.URL_PATH, reverse_url, 'Restaurant Info API: URL_NAME')
+
+        resolve_view = resolve(self.URL_PATH)
+        self.assertEqual(self.URL_NAME, resolve_view.view_name, 'Restaurant Info API: URL_PATH')
+        self.assertEqual(self.VIEW.as_view().__name__, resolve_view.func.__name__, 'Restaurant Info API: View Class')
+
+    def test2_info(self):
+        r1 = Restaurant.objects.create(
+            uuid='8c8acbe5-6eee-4aee-8588-4096704a1abc',
+            title="Test Restaurant 1",
+            r_status='ACTIVE',
+            r_visible=True,
+            latitude=37.494760,
+            longtitude=127.051284,
+            geo_point=Point(y=37.494760, x=127.051284, srid=4326),
+        )
+        RestaurantLogo.objects.create(
+            restaurant=r1,
+            url='test.jpg',
+            width=550,
+            height=750,
+        )
+
+        response = self.client.get(self.URL_PATH, )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        res_json = json.loads(response.content.decode("utf-8"))
+
+        # 제대로 조회 됬는지 확인한다.
+        self.assertEqual("Test Restaurant 1", res_json['title'])
+
+
 class RestaurantSearch(APITestCase):
     VIEW = apis.RestaurantView
     URL_PATH = '/api/restaurant/'
     URL_NAME = 'restaurant:list'
 
-    def test_url(self):
+    def test1_url(self):
         """
         레스토랑 검색 URL과 URL Name이 정상적으로 할당 되었는지 체크한다.
         :return:
@@ -27,7 +70,7 @@ class RestaurantSearch(APITestCase):
         self.assertEqual(self.URL_NAME, resolve_view.view_name, 'restaurant Search API: URL_PATH')
         self.assertEqual(self.VIEW.as_view().__name__, resolve_view.func.__name__, 'restaurant Search API: View Class')
 
-    def test_point_search(self):
+    def test2_point_search(self):
         """
         레스토랑 DB 모델링 확인. POINT 컬럼으로 정상 검색 되는지 테스트.
         :return:
@@ -60,7 +103,7 @@ class RestaurantSearch(APITestCase):
             Restaurant.objects.filter(geo_point__distance_lte=(search_point, D(km=1))).count()
         )
 
-    def test_restaurant_search(self):
+    def test3_restaurant_search(self):
         """
         레스토랑 검색 API테스트
         :return:
@@ -89,7 +132,7 @@ class RestaurantSearch(APITestCase):
             "radius": 3000,
         }
 
-        response = self.client.get(self.URL_PATH, data=req_body,)
+        response = self.client.get(self.URL_PATH, data=req_body, )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         res_json = json.loads(response.content.decode("utf-8"))
@@ -110,7 +153,7 @@ class RestaurantSearch(APITestCase):
             "page_size": 2,
         }
 
-        response = self.client.get(self.URL_PATH, data=req_body,)
+        response = self.client.get(self.URL_PATH, data=req_body, )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         res_json = json.loads(response.content.decode("utf-8"))
@@ -130,7 +173,7 @@ class CategorySearch(APITestCase):
     URL_PATH = '/api/restaurant/category/'
     URL_NAME = 'restaurant:category-list'
 
-    def test_url(self):
+    def test1_url(self):
         """
         카테고리 리스트 URL과 URL Name이 정상적으로 할당 되었는지 체크한다.
         :return:
@@ -142,13 +185,14 @@ class CategorySearch(APITestCase):
         self.assertEqual(self.URL_NAME, resolve_view.view_name, 'Category Search API: URL_PATH')
         self.assertEqual(self.VIEW.as_view().__name__, resolve_view.func.__name__, 'Category Search API: View Class')
 
-    def test_category_search(self):
+    def test2_category_search(self):
         """
         카테고리 검색 API테스트
         :return:
         """
 
-        response = self.client.get(self.URL_PATH,)
+        # DB에 아무것도 없어서 404 에러 및 detail 메시지가 올거다
+        response = self.client.get(self.URL_PATH, )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         res_json = json.loads(response.content.decode("utf-8"))
@@ -160,7 +204,7 @@ class CategorySearch(APITestCase):
             logo_url='test.jpg',
         )
 
-        response = self.client.get(self.URL_PATH,)
+        response = self.client.get(self.URL_PATH, )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         res_json = json.loads(response.content.decode("utf-8"))

@@ -81,17 +81,26 @@ class RestaurantSerializer(serializers.ModelSerializer):
         ]
 
     def get_position(self, obj):
-        return {
-            'latitude': obj.latitude,
-            'longtitude': obj.longtitude,
-            'distance': int(obj.distance.m),
-        }
+        if hasattr(obj, 'distance'):
+            return {
+                'latitude': obj.latitude,
+                'longtitude': obj.longtitude,
+                'distance': int(obj.distance.m),
+            }
+        else:
+            return {
+                'latitude': obj.latitude,
+                'longtitude': obj.longtitude,
+            }
 
     def get_eta_range(self, obj):
-        return {
-            'min': 20+math.ceil(obj.distance.m/1000)*5,
-            'max': 30+math.ceil(obj.distance.m/1000)*5,
-        }
+        if hasattr(obj, 'distance'):
+            return {
+                'min': 20+math.ceil(obj.distance.m/1000)*5,
+                'max': 30+math.ceil(obj.distance.m/1000)*5,
+            }
+        else:
+            return None;
 
     def get_address(self, obj):
 
