@@ -9,8 +9,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer, \
-    RestaurantMenuItemSerializer, ItemsSerializer
+from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer, ItemsSerializer
 from .models import FoodCategory, Restaurant, MenuSections, Items
 
 
