@@ -3,7 +3,7 @@ import math
 from rest_framework import serializers
 
 from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
-    Items
+    Items, RestaurantEndorsement
 
 
 class FoodCategorySerializer(serializers.ModelSerializer):
@@ -12,6 +12,41 @@ class FoodCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodCategory
         fields = ['uuid', 'name', 'logo_url', 'restaurant_count']
+
+
+class RestaurantEndorsementSerializer(serializers.ModelSerializer):
+    backgroundColor = serializers.SerializerMethodField()
+    iconColor = serializers.SerializerMethodField()
+    textColor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RestaurantEndorsement
+        fields = [
+            'backgroundColor',
+            'iconColor',
+            'icon_url',
+            'text',
+            'textColor',
+        ]
+
+    def get_backgroundColor(self, obj):
+        return {
+            'alpha': obj.background_color_alpha,
+            'color': obj.background_color,
+        }
+
+    def get_iconColor(self, obj):
+        return {
+            'alpha': obj.icon_color_alpha,
+            'color': obj.icon_color,
+        }
+
+    def get_textColor(self, obj):
+        return {
+            'alpha': obj.text_color_alpha,
+            'color': obj.text_color,
+        }
+
 
 
 class RestaurantLogoSerializer(serializers.ModelSerializer):
@@ -53,6 +88,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     logos = RestaurantLogoSerializer(read_only=True, many=True)
     open_time = RestaurantSectionHoursSerializer(read_only=True, many=True)
     contact = serializers.StringRelatedField(many=True)
+    endorsement = RestaurantEndorsementSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = Restaurant
@@ -78,6 +114,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'logos',
             'open_time',
             'contact',
+            'endorsement',
         ]
 
     def get_position(self, obj):
@@ -103,7 +140,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
             return None;
 
     def get_address(self, obj):
-
         return {
             'address1': obj.address1,
             'apt_suite': obj.apt_suite,
