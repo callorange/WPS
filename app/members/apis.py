@@ -3,6 +3,8 @@ from rest_framework import status, permissions, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.generics import get_object_or_404
+
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import UserSerializer
@@ -16,6 +18,7 @@ class UserListView(generics.ListAPIView):
 
 
 class UserDetail(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk, format=None):
         return get_object_or_404(User, pk=pk)
@@ -27,7 +30,7 @@ class UserDetail(APIView):
 
     def put(self, request, pk, format=None):
         user = self.get_object(pk=pk)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
