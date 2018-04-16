@@ -223,7 +223,7 @@ class UbereatsCrawler():
 
                             #아이콘 URL 체크
                             if endorsement.get('iconUrl', None):
-                                endorsement_obj.icon_color = endorsement['iconUrl']
+                                endorsement_obj.icon_url = endorsement['iconUrl']
 
                             #TEXT 색 체크
                             if endorsement.get('textColor', None):
@@ -410,7 +410,7 @@ class UbereatsCrawler():
 
                             #아이콘 URL 체크
                             if endorsement.get('iconUrl', None):
-                                endorsement_obj.icon_color = endorsement['iconUrl']
+                                endorsement_obj.icon_url = endorsement['iconUrl']
 
                             #TEXT 색 체크
                             if endorsement.get('textColor', None):
