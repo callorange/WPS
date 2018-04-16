@@ -1,3 +1,5 @@
+import math
+
 from rest_framework import serializers
 
 from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
@@ -87,8 +89,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     def get_eta_range(self, obj):
         return {
-            'min': 20+int(obj.distance.m/5/60),
-            'max': 30+int(obj.distance.m/5/60),
+            'min': 20+math.ceil(obj.distance.m/1000)*5,
+            'max': 30+math.ceil(obj.distance.m/1000)*5,
         }
 
     def get_address(self, obj):
