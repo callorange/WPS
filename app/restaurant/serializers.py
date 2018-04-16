@@ -106,7 +106,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
         }
 
     def get_logo(self, obj):
-        agent = self.context['request'].META['HTTP_USER_AGENT'].lower()
+        agent = self.context['request'].META.get('HTTP_USER_AGENT', '').lower()
         if 'iphone' in agent or 'ipad' in agent:
             if obj.logos.filter(width=750).exists():
                 return obj.logos.get(width=750).url
