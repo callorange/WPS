@@ -14,7 +14,7 @@ class FoodCategorySerializer(serializers.ModelSerializer):
         fields = ['uuid', 'name', 'logo_url', 'restaurant_count']
 
 
-class RestaurantEndorsementSerializer(serializers.ModelSerializer):
+class EndorsementSerializer(serializers.ModelSerializer):
     backgroundColor = serializers.SerializerMethodField()
     iconColor = serializers.SerializerMethodField()
     textColor = serializers.SerializerMethodField()
@@ -46,7 +46,6 @@ class RestaurantEndorsementSerializer(serializers.ModelSerializer):
             'alpha': obj.text_color_alpha,
             'color': obj.text_color,
         }
-
 
 
 class RestaurantLogoSerializer(serializers.ModelSerializer):
@@ -87,7 +86,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     logos = RestaurantLogoSerializer(read_only=True, many=True)
     open_time = RestaurantSectionHoursSerializer(read_only=True, many=True)
     contact = serializers.StringRelatedField(many=True)
-    endorsement = RestaurantEndorsementSerializer(read_only=True, allow_null=True)
+    endorsement = EndorsementSerializer(read_only=True)
 
     class Meta:
         model = Restaurant
@@ -163,10 +162,20 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
 class ItemsSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
+    endorsement = EndorsementSerializer(read_only=True)
 
     class Meta:
         model = Items
-        fields = '__all__'
+        fields = [
+            'uuid',
+            'price',
+            'title',
+            'description',
+            'disable_description',
+            'image_url',
+            'alcoholic_items',
+            'endorsement',
+        ]
 
     def get_price(self, obj):
         return int(obj.price / 100)

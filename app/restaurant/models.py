@@ -195,6 +195,29 @@ class Items(models.Model):
         verbose_name_plural = '식당 상품들'
 
 
+class ItemEndorsement(models.Model):
+    item = models.OneToOneField(Items, on_delete=models.CASCADE, related_name="endorsement", verbose_name="상품", )
+
+    background_color_alpha = models.SmallIntegerField(blank=True, null=True, verbose_name="배경 투명도",)
+    background_color = models.CharField(max_length=6, blank=True, null=True, verbose_name="배경색",)
+
+    icon_color_alpha = models.SmallIntegerField(blank=True, null=True, verbose_name="아이콘 투명도",)
+    icon_color = models.CharField(max_length=6, blank=True, null=True, verbose_name="아이콘색",)
+    icon_url = models.CharField(blank=True, null=True, max_length=200, verbose_name="아이콘 URL",)
+
+    text_color_alpha = models.SmallIntegerField(blank=True, null=True, verbose_name="선전문구 투명도",)
+    text_color = models.CharField(max_length=6, blank=True, null=True, verbose_name="선전문구색",)
+    text = models.CharField(blank=True, null=True, max_length=200, verbose_name="선전 문구", )
+
+    def __str__(self):
+        return f'{self.text}'
+
+    class Meta:
+        verbose_name = '상품 선전문구'
+        verbose_name_plural = '상품 선전문구들'
+        ordering = ['item', 'text']
+
+
 class ItemCustomizations(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
     item = models.ForeignKey(Items, on_delete=models.CASCADE, related_name="customizations")
