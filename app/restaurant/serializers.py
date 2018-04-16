@@ -78,7 +78,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
     search_text = serializers.CharField(write_only=True, required=False)
 
     r_status = serializers.CharField(read_only=True)
-    r_visible = serializers.CharField(read_only=True)
     address = serializers.SerializerMethodField()
     position = serializers.SerializerMethodField()
     eta_range = serializers.SerializerMethodField()
