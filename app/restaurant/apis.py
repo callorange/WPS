@@ -9,8 +9,9 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer
-from .models import FoodCategory, Restaurant, MenuSections
+from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer, \
+    RestaurantMenuItemSerializer, ItemsSerializer
+from .models import FoodCategory, Restaurant, MenuSections, Items
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -114,3 +115,9 @@ class RestaurantMenuView(ListAPIView):
         query = MenuSections.objects.all()
         query = query.filter(restaurant=self.kwargs['restaurant'])
         return query
+
+
+class RestaurantMenuItemView(RetrieveAPIView):
+    serializer_class = ItemsSerializer
+    queryset = Items.objects.all()
+    lookup_url_kwarg = 'item'
