@@ -11,7 +11,7 @@ from django.contrib.gis.geos import Point
 from django.utils.text import slugify
 
 from ..models import ServiceCity, Restaurant, FoodCategory, RestaurantLogo, RestaurantContact, RestaurantSectionHours, \
-    MenuSections, Items
+    MenuSections, Items, RestaurantEndorsement, ItemEndorsement
 
 __all__ = [
     'UbereatsCrawler',
@@ -200,6 +200,43 @@ class UbereatsCrawler():
                             )
                             restaurant_obj.tags.add(tag_obj)
 
+                        # 식당 선전문구를 넣는다.
+                        if restaurant.get("endorsement", None) is not None:
+                            endorsement = restaurant['endorsement']
+
+                            endorsement_obj, _ = RestaurantEndorsement.objects.get_or_create(
+                                restaurant=restaurant_obj,
+                            )
+                            #배경색 체크
+                            if endorsement.get('backgroundColor', None):
+                                if endorsement['backgroundColor'].get('alpha', None):
+                                    endorsement_obj.background_color_alpha = endorsement['backgroundColor']['alpha']
+                                if endorsement['backgroundColor'].get('color', None):
+                                    endorsement_obj.background_color = endorsement['backgroundColor']['color']
+
+                            #아이콘색 체크
+                            if endorsement.get('iconColor', None):
+                                if endorsement['iconColor'].get('alpha', None):
+                                    endorsement_obj.icon_color_alpha = endorsement['iconColor']['alpha']
+                                if endorsement['iconColor'].get('color', None):
+                                    endorsement_obj.icon_color = endorsement['iconColor']['color']
+
+                            #아이콘 URL 체크
+                            if endorsement.get('iconUrl', None):
+                                endorsement_obj.icon_color = endorsement['iconUrl']
+
+                            #TEXT 색 체크
+                            if endorsement.get('textColor', None):
+                                if endorsement['textColor'].get('alpha', None):
+                                    endorsement_obj.text_color_alpha = endorsement['textColor']['alpha']
+                                if endorsement['textColor'].get('color', None):
+                                    endorsement_obj.text_color = endorsement['textColor']['color']
+
+                            #아이콘 URL 체크
+                            if endorsement.get('text', None):
+                                endorsement_obj.text = endorsement['text']
+
+                            endorsement_obj.save()
 
                         # 상점 이미지를 넣는다.
                         if restaurant.get("heroImage", None) and restaurant["heroImage"].get("items", None):
@@ -320,20 +357,21 @@ class UbereatsCrawler():
                 for menu_key, menu_section in res_json['store']['subsectionsMap'].items():
                     menu_asc = menu_asc + 1
                     # print("         *{}".format(menu_section["title"]))
-                    if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
-                        section_obj = MenuSections.objects.create(
-                            uuid=menu_section['uuid'],
-                            restaurant=store,
-                            title=menu_section['title'],
-                            ascending=menu_asc,
-                        )
-
-                        for menu_item in menu_section['displayItems']:
-                            Items.objects.get_or_create(
-                                uuid=menu_item['uuid'],
+                    if "원산지" not in menu_section["title"]:
+                        if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
+                            section_obj = MenuSections.objects.create(
+                                uuid=menu_section['uuid'],
                                 restaurant=store,
-                                section=section_obj,
+                                title=menu_section['title'],
+                                ascending=menu_asc,
                             )
+
+                            for menu_item in menu_section['displayItems']:
+                                Items.objects.get_or_create(
+                                    uuid=menu_item['uuid'],
+                                    restaurant=store,
+                                    section=section_obj,
+                                )
 
                 # 상품 넣기
                 for menu_key, menu_item in res_json['store']['itemsMap'].items():
@@ -348,6 +386,44 @@ class UbereatsCrawler():
                         item_obj.alcoholic_items = menu_item.get('alcoholicItems', 0)
                         item_obj.created_at = menu_item['createdAt']
                         item_obj.save()
+
+                        # 식당 선전문구를 넣는다.
+                        if menu_item.get("endorsement", None) is not None:
+                            endorsement = menu_item['endorsement']
+
+                            endorsement_obj, _ = ItemEndorsement.objects.get_or_create(
+                                item=item_obj,
+                            )
+                            #배경색 체크
+                            if endorsement.get('backgroundColor', None):
+                                if endorsement['backgroundColor'].get('alpha', None):
+                                    endorsement_obj.background_color_alpha = endorsement['backgroundColor']['alpha']
+                                if endorsement['backgroundColor'].get('color', None):
+                                    endorsement_obj.background_color = endorsement['backgroundColor']['color']
+
+                            #아이콘색 체크
+                            if endorsement.get('iconColor', None):
+                                if endorsement['iconColor'].get('alpha', None):
+                                    endorsement_obj.icon_color_alpha = endorsement['iconColor']['alpha']
+                                if endorsement['iconColor'].get('color', None):
+                                    endorsement_obj.icon_color = endorsement['iconColor']['color']
+
+                            #아이콘 URL 체크
+                            if endorsement.get('iconUrl', None):
+                                endorsement_obj.icon_color = endorsement['iconUrl']
+
+                            #TEXT 색 체크
+                            if endorsement.get('textColor', None):
+                                if endorsement['textColor'].get('alpha', None):
+                                    endorsement_obj.text_color_alpha = endorsement['textColor']['alpha']
+                                if endorsement['textColor'].get('color', None):
+                                    endorsement_obj.text_color = endorsement['textColor']['color']
+
+                            #아이콘 URL 체크
+                            if endorsement.get('text', None):
+                                endorsement_obj.text = endorsement['text']
+
+                            endorsement_obj.save()
 
             except Exception as e:
                 print(e)
