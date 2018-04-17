@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
 
+    'banners',
     'members',
     'utils',
     'address.apps.AddressConfig',
