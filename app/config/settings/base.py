@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'utils',
     'address.apps.AddressConfig',
     'restaurant.apps.RestaurantConfig',
+    'order.apps.OrderConfig',
 ]
 
 MIDDLEWARE = [

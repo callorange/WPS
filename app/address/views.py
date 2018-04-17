@@ -1,18 +1,20 @@
 import functools
-import time
+from io import BytesIO
 
 import requests
 import asyncio
 
+from PIL import Image
 from django.conf import settings
 from django.contrib.gis.geoip2 import GeoIP2
+from django.http import HttpResponse
 
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from .serializers import RequestSerializer, GeoSearchRequestSerializer
+from .serializers import RequestSerializer, GeoSearchRequestSerializer, StaticMapSerializer
 
 __all__ = [
     'AddressSearch',
@@ -159,4 +161,29 @@ class GeoSearch(APIView):
 
             return place_list
         return []
+
+
+class StaticMap(APIView):
+
+    def get(self, request, format=None):
+        serializer = StaticMapSerializer(data=request.query_params)
+
+        if serializer.is_valid():
+            google_url = 'https://maps.googleapis.com/maps/api/staticmap'
+            params = {
+                'key': settings.GOOGLE_PLACE_KEY,
+                'center': ','.join([str(serializer.validated_data['lat']), str(serializer.validated_data['lng'])]),
+                'language': 'ko',
+                'zoom': 15,
+                'size': '144x144',
+                'format': 'jpg',
+                'scale': 2,
+                'markers': 'size:mid|' + ','.join([str(serializer.validated_data['lat']), str(serializer.validated_data['lng'])])
+            }
+            response = requests.get(google_url, params=params)
+
+            if response.status_code == 200:
+                return HttpResponse(response.content, status=status.HTTP_200_OK, content_type="image/jpeg")
+            return Response(Image.open(BytesIO(response.content)), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
