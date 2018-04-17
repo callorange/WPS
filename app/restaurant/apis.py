@@ -116,6 +116,12 @@ class RestaurantMenuView(ListAPIView):
         return query
 
 
+class RestaurantMenuInfoView(RetrieveAPIView):
+    serializer_class = RestaurantMenuSerializer
+    queryset = MenuSections.objects.all()
+    lookup_url_kwarg = 'menu'
+
+
 class RestaurantMenuItemView(RetrieveAPIView):
     serializer_class = ItemsSerializer
     queryset = Items.objects.all()
