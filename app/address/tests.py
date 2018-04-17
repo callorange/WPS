@@ -57,6 +57,7 @@ class AddressSearch(APITestCase):
         #     '{"search_text":["Ensure this field has at least 2 characters."]}'
         # )
 
+
 class GeoSearch(APITestCase):
     VIEW = views.GeoSearch
     URL_PATH = '/api/address/geo/'
@@ -88,3 +89,36 @@ class GeoSearch(APITestCase):
         response = self.client.post(self.URL_PATH, data=json.dumps(req_body), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('"search_text":"신사"', response.content.decode("utf-8"))
+
+
+class StaticMapGet(APITestCase):
+    VIEW = views.AddressSearch
+    URL_PATH = '/api/address/map/'
+    URL_NAME = 'address:static-map'
+
+    def test_url(self):
+        """
+        지도 이미지 URL과 URL Name이 정상적으로 할당 되었는지 체크한다.
+        :return:
+        """
+        reverse_url = reverse(self.URL_NAME)
+        self.assertEqual(self.URL_PATH, reverse_url, 'StaticMapGet API: URL_NAME')
+
+        resolve_view = resolve(self.URL_PATH)
+        self.assertEqual(self.URL_NAME, resolve_view.view_name, 'StaticMapGet API: URL_PATH')
+
+        self.assertEqual(self.VIEW.as_view().__name__, resolve_view.func.__name__, 'StaticMapGet API: View Class')
+
+    def test_static_map_get(self):
+        """
+        지도 이미지 리턴 기능을 테스트 한다.
+        :return:
+        """
+
+        # 검색 문자열을 제대로 보냈을때
+        req_body = {
+            "lat": 37.6026957,
+            "lng": 126.9291119
+        }
+        response = self.client.get(self.URL_PATH, data=req_body)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
