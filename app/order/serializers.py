@@ -5,11 +5,13 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from restaurant.serializers import RestaurantSerializer, ItemsSerializer
 from .models import Order, OrderItems
 from restaurant.models import Restaurant, Items
 
 
 class DeliverySerializer(serializers.Serializer):
+    """주문 요청 - delivery 영역"""
     lat = serializers.FloatField()
     lng = serializers.FloatField()
     address = serializers.CharField(allow_null=True, allow_blank=True)
@@ -19,11 +21,13 @@ class DeliverySerializer(serializers.Serializer):
 
 
 class PaymentSerializer(serializers.Serializer):
+    """주문 요청 - payment 영역"""
     method = serializers.CharField()
     num = serializers.CharField(max_length=19, min_length=19)
 
 
 class OrderItemSerializer(serializers.Serializer):
+    """주문 요청 - order>items>item 영역"""
     item = serializers.UUIDField()
     cnt = serializers.IntegerField()
     comment = serializers.CharField(allow_null=True, allow_blank=True)
@@ -35,6 +39,7 @@ class OrderItemSerializer(serializers.Serializer):
 
 
 class OrderInfoSerailizer(serializers.Serializer):
+    """주문 요청 - order>items 영역"""
     restaurant = serializers.UUIDField()
     items = OrderItemSerializer(many=True)
     comment = serializers.CharField(allow_null=True, allow_blank=True)
@@ -46,6 +51,7 @@ class OrderInfoSerailizer(serializers.Serializer):
 
 
 class OrderSerializer(serializers.Serializer):
+    """주문 요청 정보 전체"""
     delivery = DeliverySerializer()
     payment = PaymentSerializer()
     order = OrderInfoSerailizer()
@@ -97,3 +103,61 @@ class OrderSerializer(serializers.Serializer):
                     comment=item['comment'],
                 )
         return validated_data
+
+
+class OrderItemListSerializer(serializers.ModelSerializer):
+    """주문 리스트 > 주문상품리스트용"""
+    item = ItemsSerializer(read_only=True)
+    price = serializers.SerializerMethodField()
+    sub_total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItems
+        fields = [
+            'item',
+            'price',
+            'cnt',
+            'sub_total',
+            'comment',
+        ]
+
+    def get_price(self, obj):
+        return int(obj.price / 100)
+
+    def get_sub_total(self, obj):
+        return int(obj.sub_total / 100)
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    """주문 리스트 조회"""
+    order_restaurant = RestaurantSerializer(read_only=True)
+    order_status = serializers.SerializerMethodField()
+    price_total = serializers.SerializerMethodField()
+    order_items = OrderItemListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'delivery_lat',
+            'delivery_lng',
+            'delivery_address',
+            'delivery_address_detail',
+            'delivery_comment',
+            'delivery_date_time',
+            'payment_method',
+            'payment_num',
+            'order_restaurant',
+            'order_comment',
+            'order_member',
+            'order_status',
+            'order_create_at',
+            'price_total',
+
+            'order_items',
+        ]
+
+    def get_price_total(self, obj):
+        return int(obj.price_total / 100)
+
+    def get_order_status(self, obj):
+        return obj.get_order_status_display()
