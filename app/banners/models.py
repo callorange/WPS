@@ -1,7 +1,5 @@
 from django.db import models
 
-from restaurant.models import Restaurant
-
 
 class Banner(models.Model):
     order = models.PositiveSmallIntegerField(unique=True)
@@ -11,8 +9,6 @@ class Banner(models.Model):
     img_banner = models.ImageField(upload_to='banner', blank=True)
     img_banner_url = models.CharField(max_length=200, blank=True, null=True)
     restaurant = models.CharField(max_length=200, blank=True, null=True)
-
-    # img_banner = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         return self.order
