@@ -24,6 +24,7 @@ urlpatterns = [
     path('', views.index),
     path('api/login/', AuthTokenView.as_view()),
     path('api/address/', include('address.urls')),
+    path('api/banner/', include('banners.urls')),
     path('api/member/', include('members.urls')),
     path('api/restaurant/', include('restaurant.urls')),
     path('api/order/', include('order.urls')),
