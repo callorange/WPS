@@ -357,7 +357,7 @@ class UbereatsCrawler():
                 for menu_key, menu_section in res_json['store']['subsectionsMap'].items():
                     menu_asc = menu_asc + 1
                     # print("         *{}".format(menu_section["title"]))
-                    if "원산지" not in menu_section["title"]:
+                    if "원산지" not in menu_section["title"] and "국내산" not in menu_section["title"]:
                         if MenuSections.objects.filter(uuid=menu_section['uuid']).exists() is False:
                             section_obj = MenuSections.objects.create(
                                 uuid=menu_section['uuid'],

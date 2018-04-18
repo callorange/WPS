@@ -155,6 +155,9 @@ class RestaurantSerializer(serializers.ModelSerializer):
             if obj.logos.filter(width=750).exists():
                 return obj.logos.get(width=750).url
 
+        if obj.logos.filter(width=1080).exists():
+            return obj.logos.get(width=1080).url
+
         if obj.logos.filter(is_default=True).exists():
             return obj.logos.get(is_default=True).url
 
