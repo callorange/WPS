@@ -105,8 +105,8 @@ class OrderSerializer(serializers.Serializer):
         return validated_data
 
 
-class OrderItemListSerializer(serializers.ModelSerializer):
-    """주문 리스트 > 주문상품리스트용"""
+class OrderInfoItemSerializer(serializers.ModelSerializer):
+    """주문 정보 > 주문상품리스트용"""
     item = ItemsSerializer(read_only=True)
     price = serializers.SerializerMethodField()
     sub_total = serializers.SerializerMethodField()
@@ -128,12 +128,12 @@ class OrderItemListSerializer(serializers.ModelSerializer):
         return int(obj.sub_total / 100)
 
 
-class OrderListSerializer(serializers.ModelSerializer):
-    """주문 리스트 조회"""
+class OrderInfoSerializer(serializers.ModelSerializer):
+    """주문 정보"""
     order_restaurant = RestaurantSerializer(read_only=True)
     order_status = serializers.SerializerMethodField()
     price_total = serializers.SerializerMethodField()
-    order_items = OrderItemListSerializer(many=True, read_only=True)
+    order_items = OrderInfoItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
