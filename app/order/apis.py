@@ -11,11 +11,13 @@ from .serializers import OrderSerializer, OrderInfoSerializer
 
 
 class OrderCreateView(CreateAPIView):
+    """주문 정보 생성"""
     serializer_class = OrderSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
 
 class OrderListView(ListAPIView):
+    """주문 내역"""
     serializer_class = OrderInfoSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -23,22 +25,28 @@ class OrderListView(ListAPIView):
     page_result_name = 'orders'
 
     def get_queryset(self):
+        # 접근한 URL Name에 따라서 다른 쿼리셋을 반환한다.
         r = resolve(self.request.path)
         query = {
             'list-prepare': Order.objects.filter(order_member=self.request.user).filter(
                 order_status__in=['A', 'B', 'C']),
-            'list-past': Order.objects.filter(order_member=self.request.user).filter(order_status__in=['D', 'Z']),
+            'list-past': Order.objects.filter(order_member=self.request.user).filter(order_status__in=['D', 'F', 'Z']),
             'list': Order.objects.filter(order_member=self.request.user),
         }
         return query.get(r.url_name, query['list'])
 
 
 class OrderView(APIView):
+    """주문 정보(단건) 보기 및 정보 업데이트"""
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
+        # URL에서 pk값을 받아온다.
         pk = kwargs.get('pk', '')
+
+        # pk값과 인증여부 확인
         if pk and request.user.is_authenticated:
+            # DB에 해당 주문번호 및 유저가 맞는지 확인 후 리턴
             if Order.objects.filter(pk=pk, order_member=request.user).exists():
                 order_obj = Order.objects.get(pk=pk, order_member=request.user)
                 serialize = OrderInfoSerializer(order_obj, context={'request': request})
@@ -47,10 +55,12 @@ class OrderView(APIView):
         raise ValidationError('잘못된 요청입니다.', 400)
 
     def put(self, request, *args, **kwargs):
+        # URL에서 pk값을 받아온다.
         pk = kwargs.get('pk', '')
+
+        # pk값과 인증여부 확인
         if pk and request.user.is_authenticated:
             if Order.objects.filter(pk=pk, order_member=request.user).exists():
-
                 order_obj = Order.objects.get(pk=pk, order_member=request.user)
 
                 # 준비중이면 취소로 업데이트

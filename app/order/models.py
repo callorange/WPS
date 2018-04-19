@@ -34,6 +34,10 @@ class Order(models.Model):
     )
     order_status = models.CharField(choices=ORDER_STATUS, default='A', max_length=1, verbose_name="주문상태")
     order_create_at = models.DateTimeField(auto_now_add=True)
+    order_making_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_delivery_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_delivery_complete_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_complete_at = models.DateTimeField(blank=True, null=True, default=None)
 
     price_total = models.PositiveIntegerField(default=0, verbose_name="총 가격 합계")
 
