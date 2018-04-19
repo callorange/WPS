@@ -64,14 +64,16 @@ class OrderSerializer(serializers.Serializer):
         if attrs["delivery"]["date_time"]:
             delivery_time = datetime.strptime(attrs['delivery']['date_time'], '%Y%m%d%H%M')
             attrs["delivery"]["date_time"] = timezone.make_aware(delivery_time)
+        else:
+            attrs["delivery"]["date_time"] = None
 
         # 가격 총 합계 및 각 아이템별 가격 구하기
         price_total = 0
         for item in attrs["order"]["items"]:
             obj = item['item']
-            item['price'] = obj.price
-            item['sub_total'] = obj.price * item['cnt']
-            price_total = price_total + item['sub_total']
+            item['price'] = int(obj.price)
+            item['sub_total'] = int(obj.price * item['cnt'])
+            price_total = int(price_total + item['sub_total'])
         attrs['price_total'] = price_total
 
         return attrs
