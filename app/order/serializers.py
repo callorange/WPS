@@ -140,6 +140,7 @@ class OrderInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
+            'id',
             'delivery_lat',
             'delivery_lng',
             'delivery_address',
