@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+
 from . import views
 from members.apis import AuthTokenView
 
@@ -28,4 +29,5 @@ urlpatterns = [
     path('api/member/', include('members.urls')),
     path('api/restaurant/', include('restaurant.urls')),
     path('api/order/', include('order.urls')),
+    path('api/direction/', views.static_directions),
 ]
