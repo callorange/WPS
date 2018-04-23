@@ -86,6 +86,7 @@ class AuthTokenView(APIView):
 class UserLikeRestaurants(ListAPIView):
     """즐겨찾는 식당 조회"""
     serializer_class = RestaurantSerializer
+    permission_classes = (permissions.IsAuthenticated,)
     pagination_class = StandardResultsSetPagination
     page_result_name = 'restaurants'
 

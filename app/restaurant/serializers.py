@@ -92,6 +92,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
     contact = serializers.StringRelatedField(many=True)
     endorsement = EndorsementSerializer(read_only=True)
 
+    is_like = serializers.SerializerMethodField()
+
     class Meta:
         model = Restaurant
         fields = [
@@ -118,6 +120,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'open_time',
             'contact',
             'endorsement',
+
+            'is_like',
         ]
 
     def get_rating_count(self, obj):
@@ -169,6 +173,12 @@ class RestaurantSerializer(serializers.ModelSerializer):
             return obj.logos.get(is_default=True).url
 
         return obj.logos.last().url
+
+    def get_is_like(self, obj):
+        user_obj = self.context['request'].user
+        if user_obj.is_authenticated and obj.like_users.filter(pk=user_obj.pk):
+            return True
+        return False
 
 
 class ItemsSerializer(serializers.ModelSerializer):
