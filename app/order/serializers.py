@@ -5,11 +5,13 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from restaurant.serializers import RestaurantSerializer, ItemsSerializer
 from .models import Order, OrderItems
 from restaurant.models import Restaurant, Items
 
 
 class DeliverySerializer(serializers.Serializer):
+    """주문 요청 - delivery 영역"""
     lat = serializers.FloatField()
     lng = serializers.FloatField()
     address = serializers.CharField(allow_null=True, allow_blank=True)
@@ -19,11 +21,13 @@ class DeliverySerializer(serializers.Serializer):
 
 
 class PaymentSerializer(serializers.Serializer):
+    """주문 요청 - payment 영역"""
     method = serializers.CharField()
     num = serializers.CharField(max_length=19, min_length=19)
 
 
 class OrderItemSerializer(serializers.Serializer):
+    """주문 요청 - order>items>item 영역"""
     item = serializers.UUIDField()
     cnt = serializers.IntegerField()
     comment = serializers.CharField(allow_null=True, allow_blank=True)
@@ -35,6 +39,7 @@ class OrderItemSerializer(serializers.Serializer):
 
 
 class OrderInfoSerailizer(serializers.Serializer):
+    """주문 요청 - order>items 영역"""
     restaurant = serializers.UUIDField()
     items = OrderItemSerializer(many=True)
     comment = serializers.CharField(allow_null=True, allow_blank=True)
@@ -46,6 +51,7 @@ class OrderInfoSerailizer(serializers.Serializer):
 
 
 class OrderSerializer(serializers.Serializer):
+    """주문 요청 정보 전체"""
     delivery = DeliverySerializer()
     payment = PaymentSerializer()
     order = OrderInfoSerailizer()
@@ -58,14 +64,16 @@ class OrderSerializer(serializers.Serializer):
         if attrs["delivery"]["date_time"]:
             delivery_time = datetime.strptime(attrs['delivery']['date_time'], '%Y%m%d%H%M')
             attrs["delivery"]["date_time"] = timezone.make_aware(delivery_time)
+        else:
+            attrs["delivery"]["date_time"] = None
 
         # 가격 총 합계 및 각 아이템별 가격 구하기
         price_total = 0
         for item in attrs["order"]["items"]:
             obj = item['item']
-            item['price'] = obj.price
-            item['sub_total'] = obj.price * item['cnt']
-            price_total = price_total + item['sub_total']
+            item['price'] = int(obj.price)
+            item['sub_total'] = int(obj.price * item['cnt'])
+            price_total = int(price_total + item['sub_total'])
         attrs['price_total'] = price_total
 
         return attrs
@@ -97,3 +105,66 @@ class OrderSerializer(serializers.Serializer):
                     comment=item['comment'],
                 )
         return validated_data
+
+
+class OrderInfoItemSerializer(serializers.ModelSerializer):
+    """주문 정보 > 주문상품리스트용"""
+    item = ItemsSerializer(read_only=True)
+    price = serializers.SerializerMethodField()
+    sub_total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItems
+        fields = [
+            'item',
+            'price',
+            'cnt',
+            'sub_total',
+            'comment',
+        ]
+
+    def get_price(self, obj):
+        return int(obj.price / 100)
+
+    def get_sub_total(self, obj):
+        return int(obj.sub_total / 100)
+
+
+class OrderInfoSerializer(serializers.ModelSerializer):
+    """주문 정보"""
+    order_restaurant = RestaurantSerializer(read_only=True)
+    order_status = serializers.SerializerMethodField()
+    price_total = serializers.SerializerMethodField()
+    order_items = OrderInfoItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'delivery_lat',
+            'delivery_lng',
+            'delivery_address',
+            'delivery_address_detail',
+            'delivery_comment',
+            'delivery_date_time',
+            'payment_method',
+            'payment_num',
+            'order_restaurant',
+            'order_comment',
+            'order_member',
+            'order_status',
+            'order_create_at',
+            'price_total',
+
+            'order_items',
+        ]
+
+    def get_price_total(self, obj):
+        return int(obj.price_total / 100)
+
+    def get_order_status(self, obj):
+        return obj.get_order_status_display()
+
+
+class OrderCompleteSerializer(serializers.Serializer):
+    rating = serializers.IntegerField(min_value=1, max_value=5)

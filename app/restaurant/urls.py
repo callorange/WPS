@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .apis import FoodCategoryView, RestaurantView, RestaurantMenuView, RestaurantInfoView, RestaurantMenuItemView, \
-    RestaurantMenuInfoView
+    RestaurantMenuInfoView, RestaurantLikeView
 
 app_name = 'restaurant'
 
@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('category/', FoodCategoryView.as_view(), name="category-list"),
 
+    path('<slug:restaurant>/like/', RestaurantLikeView.as_view(), name="like"),
     path('<slug:restaurant>/', RestaurantInfoView.as_view(), name="info"),
     path('', RestaurantView.as_view(), name="list"),
 ]

@@ -2,11 +2,14 @@ from django.contrib.auth import get_user_model
 from rest_framework import status, permissions, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, ListAPIView
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from restaurant.apis import StandardResultsSetPagination
+from restaurant.serializers import RestaurantSerializer
 from .serializers import UserSerializer
 
 User = get_user_model()
@@ -78,3 +81,14 @@ class AuthTokenView(APIView):
             }
             return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLikeRestaurants(ListAPIView):
+    """즐겨찾는 식당 조회"""
+    serializer_class = RestaurantSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = StandardResultsSetPagination
+    page_result_name = 'restaurants'
+
+    def get_queryset(self):
+        return self.request.user.like_restaurants.all()

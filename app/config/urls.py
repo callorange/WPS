@@ -29,5 +29,4 @@ urlpatterns = [
     path('api/member/', include('members.urls')),
     path('api/restaurant/', include('restaurant.urls')),
     path('api/order/', include('order.urls')),
-    path('api/direction/', views.static_directions),
 ]

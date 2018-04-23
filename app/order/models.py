@@ -10,6 +10,7 @@ class Order(models.Model):
         ('B', '조리중'),
         ('C', '배달중'),
         ('D', '배달완료'),
+        ('F', '주문완료'),
         ('Z', '주문취소'),
     )
 
@@ -18,7 +19,7 @@ class Order(models.Model):
     delivery_address = models.CharField(max_length=255, blank=True, null=True, verbose_name="배달 주소")
     delivery_address_detail = models.CharField(max_length=255, blank=True, null=True, verbose_name="배달 상세주소")
     delivery_comment = models.CharField(max_length=255, blank=True, null=True, verbose_name="배달요청사항")
-    delivery_date_time = models.DateTimeField(default=None, null=True, verbose_name="예약시간")
+    delivery_date_time = models.DateTimeField(default=None, blank=True, null=True, verbose_name="예약시간")
 
     payment_method = models.CharField(max_length=10, verbose_name="결제수단")
     payment_num = models.CharField(max_length=19, verbose_name="카드번호")
@@ -33,6 +34,12 @@ class Order(models.Model):
     )
     order_status = models.CharField(choices=ORDER_STATUS, default='A', max_length=1, verbose_name="주문상태")
     order_create_at = models.DateTimeField(auto_now_add=True)
+    order_making_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_delivery_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_delivery_complete_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_complete_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_cancel_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_rating = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
 
     price_total = models.PositiveIntegerField(default=0, verbose_name="총 가격 합계")
 
