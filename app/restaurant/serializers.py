@@ -78,6 +78,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     r_status = serializers.CharField(read_only=True)
     rating = serializers.DecimalField(read_only=True, max_digits=2, decimal_places=1, coerce_to_string=False)
+    rating_count = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     position = serializers.SerializerMethodField()
     eta_range = serializers.SerializerMethodField()
@@ -103,6 +104,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'r_visible',
             'schedule_order',
             'rating',
+            'rating_count',
 
             'address',
             'position',
@@ -115,6 +117,9 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'contact',
             'endorsement',
         ]
+
+    def get_rating_count(self, obj):
+        return obj.orders.filter(order_status='F').count()
 
     def get_position(self, obj):
         if hasattr(obj, 'distance'):
