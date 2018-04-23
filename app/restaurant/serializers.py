@@ -1,6 +1,8 @@
 import math
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
     Items, RestaurantEndorsement
@@ -137,8 +139,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
     def get_eta_range(self, obj):
         if hasattr(obj, 'distance'):
             return {
-                'min': 20+math.ceil(obj.distance.m/1000)*5,
-                'max': 30+math.ceil(obj.distance.m/1000)*5,
+                'min': 20 + math.ceil(obj.distance.m / 1000) * 5,
+                'max': 30 + math.ceil(obj.distance.m / 1000) * 5,
             }
         else:
             return None;
@@ -201,3 +203,21 @@ class RestaurantMenuSerializer(serializers.ModelSerializer):
 
             'items',
         ]
+
+
+class RestaurantLikeSerializer(serializers.Serializer):
+    member = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = [
+            'member',
+        ]
+
+    def create(self, validated_data):
+        restaurant_uuid = self.context['view'].kwargs['restaurant']
+        if Restaurant.objects.filter(uuid=restaurant_uuid).exists():
+            validated_data['member'].like_restaurants.add(Restaurant.objects.get(uuid=restaurant_uuid))
+            return validated_data
+        raise ValidationError("존재하지 않는 식당 입니다.")

@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 
 from order.models import Order
 from restaurant.apis import StandardResultsSetPagination
-from restaurant.models import Restaurant
 from .serializers import OrderSerializer, OrderInfoSerializer, OrderCompleteSerializer
 
 
