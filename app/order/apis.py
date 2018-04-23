@@ -1,4 +1,7 @@
+from django.db import transaction
+from django.db.models import Avg
 from django.urls import resolve
+from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView, ListAPIView
@@ -7,7 +10,7 @@ from rest_framework.views import APIView
 
 from order.models import Order
 from restaurant.apis import StandardResultsSetPagination
-from .serializers import OrderSerializer, OrderInfoSerializer
+from .serializers import OrderSerializer, OrderInfoSerializer, OrderCompleteSerializer
 
 
 class OrderCreateView(CreateAPIView):
@@ -66,11 +69,25 @@ class OrderView(APIView):
                 # 준비중이면 취소로 업데이트
                 if order_obj.order_status == 'A':
                     order_obj.order_status = 'Z'
+                    order_obj.order_cancel_at = timezone.now()
                     order_obj.save()
-                # 배달완료면 주문완료로 업데이트
+                # 배달완료면 주문완료로 업데이트 후 평점 계산
                 elif order_obj.order_status == 'D':
-                    order_obj.order_status = 'F'
-                    order_obj.save()
+                    order_rating = OrderCompleteSerializer(data=request.data)
+                    if order_rating.is_valid(raise_exception=True):
+                        with transaction.atomic():
+                            order_obj.order_status = 'F'
+                            order_obj.order_rating = order_rating.validated_data['rating']
+                            order_obj.order_complete_at = timezone.now()
+                            order_obj.save()
+
+                            # 평점 업데이트
+                            rating_restaurant = order_obj.order_restaurant
+                            rating_avg = Order.objects.filter(order_restaurant=rating_restaurant,
+                                                              order_status='F').aggregate(Avg('order_rating'))
+                            rating_restaurant.rating = rating_avg['order_rating__avg']
+                            rating_restaurant.save()
+
                 # 다른 상태에선 업데이트 불가
                 else:
                     raise ValidationError('취소/완료가 불가능 합니다.', 403)

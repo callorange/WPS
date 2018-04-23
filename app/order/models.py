@@ -38,6 +38,8 @@ class Order(models.Model):
     order_delivery_at = models.DateTimeField(blank=True, null=True, default=None)
     order_delivery_complete_at = models.DateTimeField(blank=True, null=True, default=None)
     order_complete_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_cancel_at = models.DateTimeField(blank=True, null=True, default=None)
+    order_rating = models.PositiveSmallIntegerField(blank=True, null=True, default=None)
 
     price_total = models.PositiveIntegerField(default=0, verbose_name="총 가격 합계")
 

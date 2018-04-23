@@ -1,6 +1,8 @@
 import math
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import FoodCategory, Restaurant, RestaurantContact, RestaurantLogo, RestaurantSectionHours, MenuSections, \
     Items, RestaurantEndorsement
@@ -78,6 +80,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     r_status = serializers.CharField(read_only=True)
     rating = serializers.DecimalField(read_only=True, max_digits=2, decimal_places=1, coerce_to_string=False)
+    rating_count = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     position = serializers.SerializerMethodField()
     eta_range = serializers.SerializerMethodField()
@@ -88,6 +91,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
     open_time = RestaurantSectionHoursSerializer(read_only=True, many=True)
     contact = serializers.StringRelatedField(many=True)
     endorsement = EndorsementSerializer(read_only=True)
+
+    is_like = serializers.SerializerMethodField()
 
     class Meta:
         model = Restaurant
@@ -103,6 +108,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'r_visible',
             'schedule_order',
             'rating',
+            'rating_count',
 
             'address',
             'position',
@@ -114,7 +120,12 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'open_time',
             'contact',
             'endorsement',
+
+            'is_like',
         ]
+
+    def get_rating_count(self, obj):
+        return obj.orders.filter(order_status='F').count()
 
     def get_position(self, obj):
         if hasattr(obj, 'distance'):
@@ -132,8 +143,8 @@ class RestaurantSerializer(serializers.ModelSerializer):
     def get_eta_range(self, obj):
         if hasattr(obj, 'distance'):
             return {
-                'min': 20+math.ceil(obj.distance.m/1000)*5,
-                'max': 30+math.ceil(obj.distance.m/1000)*5,
+                'min': 20 + math.ceil(obj.distance.m / 1000) * 5,
+                'max': 30 + math.ceil(obj.distance.m / 1000) * 5,
             }
         else:
             return None;
@@ -162,6 +173,12 @@ class RestaurantSerializer(serializers.ModelSerializer):
             return obj.logos.get(is_default=True).url
 
         return obj.logos.last().url
+
+    def get_is_like(self, obj):
+        user_obj = self.context['request'].user
+        if user_obj.is_authenticated and obj.like_users.filter(pk=user_obj.pk):
+            return True
+        return False
 
 
 class ItemsSerializer(serializers.ModelSerializer):
@@ -196,3 +213,21 @@ class RestaurantMenuSerializer(serializers.ModelSerializer):
 
             'items',
         ]
+
+
+class RestaurantLikeSerializer(serializers.Serializer):
+    member = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        fields = [
+            'member',
+        ]
+
+    def create(self, validated_data):
+        restaurant_uuid = self.context['view'].kwargs['restaurant']
+        if Restaurant.objects.filter(uuid=restaurant_uuid).exists():
+            validated_data['member'].like_restaurants.add(Restaurant.objects.get(uuid=restaurant_uuid))
+            return validated_data
+        raise ValidationError("존재하지 않는 식당 입니다.")

@@ -5,11 +5,13 @@ from django.contrib.gis.geos import *
 from django.contrib.gis.measure import D
 
 from django.db.models import Count, Q
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework import permissions
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer, ItemsSerializer
+from .serializers import FoodCategorySerializer, RestaurantSerializer, RestaurantMenuSerializer, ItemsSerializer, \
+    RestaurantLikeSerializer
 from .models import FoodCategory, Restaurant, MenuSections, Items
 
 
@@ -126,3 +128,9 @@ class RestaurantMenuItemView(RetrieveAPIView):
     serializer_class = ItemsSerializer
     queryset = Items.objects.all()
     lookup_url_kwarg = 'item'
+
+
+class RestaurantLikeView(CreateAPIView):
+    """즐겨찾는 식당 등록"""
+    serializer_class = RestaurantLikeSerializer
+    permission_classes = (permissions.IsAuthenticated,)

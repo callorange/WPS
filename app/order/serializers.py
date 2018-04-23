@@ -164,3 +164,7 @@ class OrderInfoSerializer(serializers.ModelSerializer):
 
     def get_order_status(self, obj):
         return obj.get_order_status_display()
+
+
+class OrderCompleteSerializer(serializers.Serializer):
+    rating = serializers.IntegerField(min_value=1, max_value=5)
