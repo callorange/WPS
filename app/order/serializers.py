@@ -1,7 +1,8 @@
 from datetime import datetime
-
+import time
 from django.db import transaction
 from django.utils import timezone
+from multiprocessing import Process
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -104,6 +105,21 @@ class OrderSerializer(serializers.Serializer):
                     sub_total=item['sub_total'],
                     comment=item['comment'],
                 )
+
+        if order_obj:
+            def order_status(instance):
+                time.sleep(10)
+                instance.order_status = 'B'
+                instance.save()
+                time.sleep(10)
+                instance.order_status = 'C'
+                instance.save()
+                time.sleep(10)
+                instance.order_status = 'D'
+                instance.save()
+
+            p = Process(target=order_status, args=(order_obj,))
+            p.start()
         return validated_data
 
 

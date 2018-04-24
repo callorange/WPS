@@ -21,7 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
     img_profile = serializers.ImageField(default='profile_dummy.png')
 
     def create(self, validated_data):
-        print(validated_data)
         user = User.objects.create_user(
             email=validated_data['username'],
             username=validated_data['username'],
