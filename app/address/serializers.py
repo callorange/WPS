@@ -16,3 +16,8 @@ class GeoSearchRequestSerializer(serializers.Serializer):
 class StaticMapSerializer(serializers.Serializer):
     lat = serializers.FloatField()
     lng = serializers.FloatField()
+
+
+class GeoCodeSearchRequestSerializer(serializers.Serializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()

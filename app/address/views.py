@@ -14,7 +14,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from .serializers import RequestSerializer, GeoSearchRequestSerializer, StaticMapSerializer
+from .serializers import RequestSerializer, GeoSearchRequestSerializer, StaticMapSerializer, \
+    GeoCodeSearchRequestSerializer
 
 __all__ = [
     'AddressSearch',
@@ -187,3 +188,35 @@ class StaticMap(APIView):
             return Response(Image.open(BytesIO(response.content)), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class GeoCode(APIView):
+
+    def post(self, request, format=None):
+        serializer = GeoCodeSearchRequestSerializer(data=request.data)
+
+        if serializer.is_valid():
+            search_result = dict(serializer.data)
+            search_result.update({'result': self.place_search(request)})
+            return Response(search_result, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def place_search(self, request):
+        # 구글 Geo Coding URL
+        place_url = 'https://maps.googleapis.com/maps/api/geocode/json'
+
+        if request.data.get('latitude', None) and request.data.get('longitude', None):
+            client_location = {
+                'latitude': request.data.get('latitude', None),
+                'longitude': request.data.get('longitude', None),
+                'country_code': 'KO'
+            }
+
+        place_params = {
+            'key': settings.GOOGLE_PLACE_KEY,
+            'latlng': ','.join([str(client_location['latitude']), str(client_location['longitude'])]),
+            'language': request.data.get("language", "ko"),
+        }
+        places = requests.get(place_url, params=place_params)
+        if places.status_code == 200:
+            return places.json()["results"]
+        return []
