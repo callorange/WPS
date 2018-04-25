@@ -94,7 +94,7 @@ class AddressSearch(APIView):
 
             tasks = []
 
-            for i, place in enumerate(places.json()["predictions"][:5]):
+            for i, place in enumerate(places.json()["predictions"][:3]):
                 tasks.append(fetch(place['place_id'], i))
 
             loop = asyncio.SelectorEventLoop()
