@@ -1,8 +1,12 @@
+import asyncio
 from datetime import datetime
 import time
+
+from django import db
+import multiprocessing
+from multiprocessing import Process
 from django.db import transaction
 from django.utils import timezone
-from multiprocessing import Process
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -118,8 +122,13 @@ class OrderSerializer(serializers.Serializer):
                 instance.order_status = 'D'
                 instance.save()
 
-            p = Process(target=order_status, args=(order_obj,))
-            p.start()
+            # db.connections.close_all()
+            # p = Process(target=order_status, args=(order_obj,))
+            # p.daemon = True
+            # p.start()
+            loop = asyncio.SelectorEventLoop()
+            asyncio.set_event_loop(loop)
+            loop.run_in_executor(None, order_status, order_obj)
         return validated_data
 
 
