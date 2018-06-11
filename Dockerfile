@@ -7,6 +7,9 @@ ENV             DJANGO_SETTINGS_MODULE  config.settings.${BUILD_MODE}
 # 소스폴더를 통째로 복사
 COPY            . /srv/project
 
+# efs 연결할 디렉토리 생성
+RUN             mkdir /efs
+
 # nginx 설정파일을 복사 및 링크
 RUN             cp -f /srv/project/.config/${BUILD_MODE}/nginx.conf         /etc/nginx/nginx.conf &&\
                 cp -f /srv/project/.config/${BUILD_MODE}/nginx-app.conf     /etc/nginx/sites-available/ &&\

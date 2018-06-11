@@ -1,0 +1,10 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Volumes": [
+    {
+      "HostDirectory": "/efs",
+      "ContainerDirectory": "/efs"
+    }
+  ],
+  "Logging": "/var/log/nginx"
+}

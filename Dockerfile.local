@@ -6,6 +6,10 @@ RUN             apt-get -y update
 RUN             apt-get -y dist-upgrade
 RUN             apt-get -y install build-essential nginx supervisor
 
+# geoip 관련 설치
+RUN             apt-get -y install binutils libproj-dev gdal-bin
+RUN             apt-get -y install spatialite-bin
+
 # requirments만 복사
 COPY            .requirements /srv/.requirements
 
