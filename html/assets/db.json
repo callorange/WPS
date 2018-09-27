@@ -1,0 +1,57 @@
+{
+  "count": 59,
+  "next": "https://www.overeats.kr/api/restaurant/category/?page=2&page_size=10",
+  "previous": null,
+  "categories": [
+    {
+      "uuid": "702f813b-a64a-4456-b253-e547592b78ea",
+      "name": "펍",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/07c8a18c386b4f4263e8c6a8921c4676"
+    },
+    {
+      "uuid": "7f1d8e4a-ce36-439a-b19c-7d50ecd39d51",
+      "name": "뉴 멕시칸",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/d409b9e4da70c004798275dc9b6a8291"
+    },
+    {
+      "uuid": "17e5b656-bcb5-4042-8765-f1f6ed97aad5",
+      "name": "버거",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/128411a1b54acd3c3c4e5263e7c58e2d"
+    },
+    {
+      "uuid": "a8a5445a-46f8-46b2-a210-fe60c09318eb",
+      "name": "비건",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/55c691b1f4df92218a47588c5ec761d1"
+    },
+    {
+      "uuid": "bb871f1e-45c6-431b-b410-593314efc657",
+      "name": "스시",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/21b6882726bf71ba17b29ab47ef16d22"
+    },
+    {
+      "uuid": "0f8b45e3-8e97-4b89-a6a2-e7efaac20209",
+      "name": "안주",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/92daea70cc9f6b0725ab7bedcf93284c"
+    },
+    {
+      "uuid": "22dfce53-f628-494a-a965-dd91d8801022",
+      "name": "양식",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/cfb732b6a1111371079b2fdb73287fcc"
+    },
+    {
+      "uuid": "71aab814-88d8-45ba-9173-6fb9b97b81fe",
+      "name": "웰빙",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/5bcce6114b9d2d5a39b81e756a250407"
+    },
+    {
+      "uuid": "58dec3e8-6381-400b-8d83-0ee7b6260a20",
+      "name": "일식",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/78e3d7f0866e5f17c8350216653b063b"
+    },
+    {
+      "uuid": "3846b57e-19a8-4bac-91a5-828a3d60a9da",
+      "name": "주류",
+      "logo_url": "https://duyt4h9nfnj50.cloudfront.net/sku/ef607d9b260dcc5b3d1c0bdca1bfbe7d"
+    }
+  ]
+}
