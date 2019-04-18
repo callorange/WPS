@@ -5,6 +5,8 @@ URL : www.overeats.kr
 
 Elastic Beanstalk에 Nginx-uWSGI-Django로 구성된 Docker 이미지를 배포합니다.
 
+YOUTUBE : https://www.youtube.com/watch?v=AGw2LDKZJV8
+
 ## Requirements
 
 ### 공통사항
